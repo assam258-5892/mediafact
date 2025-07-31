@@ -42,10 +42,27 @@ def article_detail(article_id):
         article = db.execute('SELECT 기사.*, 분류.분류명칭 FROM 기사 JOIN 분류 ON 기사.분류번호 = 분류.분류번호 WHERE 기사번호=? AND 기사.공개여부=1', (article_id,)).fetchone()
         photos = db.execute('SELECT * FROM 사진 WHERE 기사번호=?', (article_id,)).fetchall()
         reporter = db.execute('SELECT * FROM 기자 WHERE 기자번호=?', (article['기자번호'],)).fetchone() if article else None
+        # 기사내용 [사진:N] 치환 후 마크다운 변환
+        import markdown
+        def replace_photo_tag(text, photos):
+            import re
+            def photo_replacer(match):
+                num = int(match.group(1))
+                for photo in photos:
+                    if photo['사진번호'] == num:
+                        filename = photo['사진경로'].split('/')[-1]
+                        return f'<img src="/static/images/photo/{filename}" alt="사진:{num}" style="max-width:100%;">'
+                return match.group(0)
+            return re.sub(r'\[사진:(\d+)\]', lambda m: photo_replacer(m), text)
+        if article and photos:
+            replaced_content = replace_photo_tag(article['기사내용'], photos)
+            article_content_html = markdown.markdown(replaced_content)
+        else:
+            article_content_html = markdown.markdown(article['기사내용']) if article else ''
     except Exception as e:
-        article, photos, reporter = None, [], None
+        article, photos, reporter, article_content_html = None, [], None, ''
     categories = db.execute('SELECT * FROM 분류 ORDER BY 분류번호').fetchall()
-    return render_template('article.html', article=article, photos=photos, reporter=reporter, categories=categories)
+    return render_template('article.html', article=article, photos=photos, reporter=reporter, categories=categories, article_content_html=article_content_html)
 
 # 기사 편집
 @app.route('/article/<int:article_id>/edit', methods=['GET', 'POST'])
@@ -56,12 +73,15 @@ def article_edit(article_id):
         summary = request.form.get('summary', '')
         content = request.form.get('content', '')
         publish = int(request.form.get('publish', 0))
-        db.execute('UPDATE 기사 SET 기사제목=?, 기사요약=?, 기사내용=?, 공개여부=? WHERE 기사번호=?', (title, summary, content, publish, article_id))
+        from datetime import datetime
+        now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        db.execute('UPDATE 기사 SET 기사제목=?, 기사요약=?, 기사내용=?, 공개여부=?, 수정일자=? WHERE 기사번호=?', (title, summary, content, publish, now, article_id))
         db.commit()
         return redirect(url_for('article_detail', article_id=article_id))
     article = db.execute('SELECT * FROM 기사 WHERE 기사번호=?', (article_id,)).fetchone()
+    photos = db.execute('SELECT * FROM 사진 WHERE 기사번호=?', (article_id,)).fetchall()
     categories = db.execute('SELECT * FROM 분류 ORDER BY 분류번호').fetchall()
-    return render_template('article_edit.html', article=article, categories=categories)
+    return render_template('article_edit.html', article=article, categories=categories, photos=photos)
 
 # 카테고리별 기사
 @app.route('/category/<int:category_id>')
