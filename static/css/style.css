@@ -1,5 +1,35 @@
 
-/* 사진 갤러리 그리드 레이아웃 */
+/* 0. 리셋 및 공통 */
+body {
+    font-family: 'Noto Sans KR', 'Malgun Gothic', Arial, sans-serif;
+    background: #f7f8fa;
+    color: #222;
+    margin: 0;
+    padding: 0;
+}
+a, a:visited, a:hover, a:active {
+    text-decoration: none !important;
+    color: #222 !important;
+}
+a {
+    color: #222;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 1.08em;
+}
+a:hover {
+    color: #0056b3 !important;
+    text-decoration: none;
+}
+a:visited {
+    color: #222;
+}
+small {
+    color: #666;
+    font-size: 0.98em;
+}
+
+/* 1. 레이아웃/그리드 */
 .photo-list {
     display: flex;
     flex-wrap: wrap;
@@ -33,14 +63,8 @@
     text-align: center;
     word-break: keep-all;
 }
-a, a:visited, a:hover, a:active {
-    text-decoration: none !important;
-    color: #222 !important;
-}
-a:hover {
-    color: #0056b3 !important;
-}
 
+/* 2. 구조 (header, nav, main, footer, h1) */
 body > header,
 body > main,
 body > footer {
@@ -49,6 +73,159 @@ body > footer {
     margin-right: auto;
     width: 100%;
     box-sizing: border-box;
+}
+header {
+    border-bottom: 1px solid #e5e5e5;
+    background: #fff;
+    color: #222;
+    padding: 0 0 8px 0;
+}
+nav {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 8px;
+}
+main {
+    max-width: 800px;
+    width: 100%;
+    margin: 32px auto 24px auto;
+    padding: 0 32px;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    border-radius: 8px;
+}
+h1 {
+    text-align: center;
+    font-size: 2.2em;
+    font-weight: 700;
+    margin: 18px 0 8px 0;
+    letter-spacing: 1px;
+    background: #f7f8fa;
+}
+footer {
+    color: #222;
+    font-size: 0.95em;
+    display: block;
+    text-align: center;
+    background: #f7f8fa;
+    border-top: 1.5px solid #ececec;
+    padding: 16px 0 8px 0;
+    margin-top: 32px;
+}
+
+/* 3. 네비게이션/카테고리/검색 */
+.nav-bar-flex {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    gap: 0;
+}
+.nav-left {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    min-width: 120px;
+    justify-content: flex-start;
+}
+.nav-center {
+    flex: 1 1 auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 18px;
+}
+.nav-right {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    min-width: 220px;
+    justify-content: flex-end;
+}
+.nav-categories {
+    flex: 1 1 auto;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    background: #fff;
+    gap: 18px;
+}
+.nav-search-wrap {
+    flex: 0 0 auto;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    min-width: 220px;
+}
+.nav-search {
+    flex: 0 0 auto;
+    margin-left: 24px;
+    display: flex;
+    align-items: center;
+    margin-top: 2px;
+}
+.nav-search input[type="text"] {
+    padding: 4px 8px;
+    font-size: 1em;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+}
+.nav-search button {
+    padding: 4px 10px;
+    font-size: 1em;
+    background: #0056b3;
+    color: #fff;
+    border: none;
+    border-radius: 3px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.07);
+    cursor: pointer;
+    margin-left: 2px;
+}
+
+/* 4. 컴포넌트/카테고리바 */
+.chosun-category-bar {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #fff;
+    border-bottom: 2px solid #e5e5e5;
+    margin-bottom: 12px;
+    padding: 0 0 2px 0;
+    width: 100%;
+}
+.chosun-category {
+    display: inline-block;
+    color: #222;
+    background: #fff;
+    text-decoration: none;
+    font-size: 1.08em;
+    font-weight: 600;
+    padding: 10px 12px 8px 12px;
+    border-right: 1px solid #e5e5e5;
+    transition: background 0.2s, color 0.2s;
+}
+.chosun-category:last-child {
+    border-right: none;
+}
+.chosun-category:hover {
+    background: #eaf2ff;
+    color: #0056b3;
+    text-decoration: none;
+}
+.chosun-home {
+    color: #0056b3;
+}
+.chosun-photo {
+    color: #008080;
+}
+
+/* 5. 유틸리티 */
+.footer-center {
+    display: block;
+    margin: 0 auto;
+    text-align: center;
+    width: fit-content;
 }
 /* 풋터 텍스트를 전체 페이지에서 좌우 중앙 정렬 */
 .footer-center {
@@ -85,7 +262,6 @@ body > footer {
     align-items: center;
     min-width: 220px;
     justify-content: flex-end;
-}
 }
 .nav-categories {
     flex: 1 1 auto;
