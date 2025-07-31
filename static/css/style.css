@@ -1,3 +1,10 @@
+a, a:visited, a:hover, a:active {
+    text-decoration: none !important;
+    color: #222 !important;
+}
+a:hover {
+    color: #0056b3 !important;
+}
 body > header,
 body > main,
 body > footer {
@@ -130,6 +137,7 @@ nav {
 .chosun-category:hover {
     background: #eaf2ff;
     color: #0056b3;
+    text-decoration: none;
 }
 .chosun-home {
     color: #0056b3;
@@ -182,7 +190,7 @@ a {
 }
 a:hover {
     color: #0056b3;
-    text-decoration: underline;
+    text-decoration: none;
 }
 /* 방문한 링크 색상 유지 */
 a:visited {
@@ -195,10 +203,10 @@ small {
     border-radius: 8px;
 }
 footer {
-    width: 100%;
-    text-align: center;
+    color: #0056b3;
+    text-decoration: none;
     color: #888;
     font-size: 0.95em;
-    margin: 32px 0 12px 0;
+    color: #222;
     display: block;
 }
