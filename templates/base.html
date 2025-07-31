@@ -10,24 +10,28 @@
     <header>
         <h1><a href="/">미디어팩트 신문</a></h1>
         <nav>
-            <a href="/">홈</a>
-            {% if categories %}
-                {% for category in categories %}
-                    | <a href="/category/{{ category['분류번호'] }}">{{ category['분류명칭'] }}</a>
-                {% endfor %}
-            {% endif %}
-            | <a href="/photo">사진 갤러리</a>
-            <form action="/search" method="get" style="display:inline;">
-                <input type="text" name="q" placeholder="검색어" value="{{ query|default('') }}">
-                <button type="submit">검색</button>
-            </form>
+            <div class="nav-bar-flex">
+                <div class="nav-categories">
+                    <a href="/" class="nav-home">홈</a>
+                    {% if categories %}
+                        {% for category in categories %}
+                            <a href="/category/{{ category['분류번호'] }}" class="nav-category">{{ category['분류명칭'] }}</a>
+                        {% endfor %}
+                    {% endif %}
+                    <a href="/photo" class="nav-photo">사진 갤러리</a>
+                </div>
+                <form action="/search" method="get" class="nav-search">
+                    <input type="text" name="q" placeholder="검색어" value="{{ query|default('') }}">
+                    <button type="submit">검색</button>
+                </form>
+            </div>
         </nav>
     </header>
     <main>
         {% block content %}{% endblock %}
     </main>
     <footer>
-        <small>© 미디어팩트 신문</small>
+        <small class="footer-center">© 미디어팩트 신문</small>
     </footer>
 </body>
 </html>
