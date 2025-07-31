@@ -1,3 +1,10 @@
+body > header,
+body > main,
+body > footer {
+    width: 80%;
+    margin-left: 10%;
+    margin-right: 10%;
+}
 /* 풋터 텍스트를 전체 페이지에서 좌우 중앙 정렬 */
 .footer-center {
     display: block;
