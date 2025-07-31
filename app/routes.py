@@ -1,8 +1,19 @@
 from flask import Flask, render_template, request, redirect, url_for, g
+from datetime import datetime
 import sqlite3
 
-app = Flask(__name__, template_folder='../templates', static_folder='../static')
 DATABASE = 'db/mediafact.db'
+
+app = Flask(__name__, template_folder='../templates', static_folder='../static')
+
+# Jinja2 날짜 포맷 필터 등록
+def datetime_format(value):
+    try:
+        dt = datetime.strptime(value[:16], '%Y-%m-%d %H:%M')
+        return dt.strftime('%Y.%m.%d. %H:%M')
+    except Exception:
+        return value
+app.jinja_env.filters['datetime_format'] = datetime_format
 
 # DB 연결 함수
 def get_db():
