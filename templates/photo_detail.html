@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block title %}사진 상세{% endblock %}
+{% block content %}
+<h2>사진 상세</h2>
+{% if photo %}
+    <img src="/static/images/photo/{{ photo['사진경로'].split('/')[-1] }}" alt="{{ photo['사진설명'] }}" style="max-width:600px;">
+    <p><strong>설명:</strong> {{ photo['사진설명'] }}</p>
+    <p><strong>기사:</strong> <a href="/article/{{ article['기사번호'] }}">{{ article['기사제목'] }}</a></p>
+    <p><strong>기자:</strong> {{ reporter['기자성명'] }}{% if reporter['기자직함'] %} {{ reporter['기자직함'] }}{% endif %}</p>
+    <p><strong>등록일자:</strong> {{ photo['등록일자']|datetime_format }}</p>
+{% else %}
+    <p>사진 정보를 찾을 수 없습니다.</p>
+{% endif %}
+{% endblock %}

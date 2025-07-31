@@ -5,7 +5,9 @@
 <ul>
     {% for photo in photos %}
     <li>
-        <img src="/static/images/photo/{{ photo['사진경로'].split('/')[-1] }}" alt="{{ photo['사진설명'] }}" style="max-width:300px;">
+        <a href="/photo/{{ photo['사진연번'] }}">
+            <img src="/static/images/photo/{{ photo['사진경로'].split('/')[-1] }}" alt="{{ photo['사진설명'] }}" style="max-width:300px;">
+        </a>
         <p>{{ photo['사진설명'] }}</p>
     </li>
     {% endfor %}

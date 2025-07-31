@@ -8,18 +8,47 @@
 /* 분류바 중앙, 검색창 오른쪽 배치 */
 .nav-bar-flex {
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
     align-items: center;
     width: 100%;
     gap: 0;
 }
-.nav-categories {
+.nav-left {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    min-width: 120px;
+    justify-content: flex-start;
+}
+.nav-center {
     flex: 1 1 auto;
     display: flex;
     justify-content: center;
     align-items: center;
+    gap: 18px;
+}
+.nav-right {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    min-width: 220px;
+    justify-content: flex-end;
+}
+}
+.nav-categories {
+    flex: 1 1 auto;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
     background: #fff;
     gap: 18px;
+}
+.nav-search-wrap {
+    flex: 0 0 auto;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    min-width: 220px;
 }
 .nav-search {
     flex: 0 0 auto;

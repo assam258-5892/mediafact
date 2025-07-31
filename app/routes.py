@@ -73,6 +73,16 @@ def photo_gallery():
     categories = db.execute('SELECT * FROM 분류 ORDER BY 분류번호').fetchall()
     return render_template('photo.html', photos=photos, categories=categories)
 
+# 사진 상세
+@app.route('/photo/<int:photo_id>')
+def photo_detail(photo_id):
+    db = get_db()
+    photo = db.execute('SELECT * FROM 사진 WHERE 사진연번=?', (photo_id,)).fetchone()
+    article = db.execute('SELECT 기사제목, 기사번호 FROM 기사 WHERE 기사번호=?', (photo['기사번호'],)).fetchone() if photo else None
+    reporter = db.execute('SELECT * FROM 기자 WHERE 기자번호=?', (photo['기자번호'],)).fetchone() if photo else None
+    categories = db.execute('SELECT * FROM 분류 ORDER BY 분류번호').fetchall()
+    return render_template('photo_detail.html', photo=photo, article=article, reporter=reporter, categories=categories)
+
 # 기사 검색(FTS5)
 @app.route('/search')
 def search():
