@@ -2,12 +2,22 @@
 {% block title %}카테고리별 기사{% endblock %}
 {% block content %}
 <h2>카테고리 기사</h2>
-<ul>
+<div class="article-list">
     {% for article in articles %}
-    <li>
-        <a href="/article/{{ article['기사번호'] }}" title="{{ article['기사요약'] }}">{{ article['기사제목'] }}</a>
-        <small>{{ article['작성일자']|datetime_format }} | {{ article['기자성명'] }}{% if article['기자직함'] %} {{ article['기자직함'] }}{% endif %}</small>
-    </li>
+    <div class="article-item">
+        <div style="display:flex;align-items:flex-start;gap:16px;">
+            {% if article['대표사진경로'] %}
+            <a href="/article/{{ article['기사번호'] }}">
+                <img src="/static/images/photo/{{ article['대표사진경로'].split('/')[-1] }}" alt="대표사진" style="width:64px;height:48px;object-fit:cover;border-radius:6px;box-shadow:0 1px 4px rgba(0,0,0,0.07);">
+            </a>
+            {% endif %}
+            <div style="flex:1;min-width:0;">
+                <a href="/article/{{ article['기사번호'] }}" title="{{ article['기사요약'] }}" style="font-size:1.15em;font-weight:600;">{{ article['기사제목'] }}</a><br>
+                <span style="color:#555;font-size:0.98em;">{{ article['기사요약'] }}</span><br>
+                <small>{{ article['작성일자']|datetime_format }} | {{ article['기자성명'] }}{% if article['기자직함'] %} {{ article['기자직함'] }}{% endif %}</small>
+            </div>
+        </div>
+    </div>
     {% endfor %}
-</ul>
+</div>
 {% endblock %}

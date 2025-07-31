@@ -2,12 +2,36 @@
 {% block title %}최신 기사 목록{% endblock %}
 {% block content %}
 <h2>최신 기사</h2>
-<ul>
-    {% for article in articles %}
-    <li>
-        <a href="/article/{{ article['기사번호'] }}" title="{{ article['기사요약'] }}">{{ article['기사제목'] }}</a>
-        <small>{{ article['작성일자']|datetime_format }} | {{ article['기자성명'] }}{% if article['기자직함'] %} {{ article['기자직함'] }}{% endif %}</small>
-    </li>
+{% if articles and articles[0] %}
+<div class="main-article" style="text-align:center; margin-bottom:32px;">
+    {% if articles[0]['대표사진경로'] %}
+    <a href="/article/{{ articles[0]['기사번호'] }}">
+        <img src="/static/images/photo/{{ articles[0]['대표사진경로'].split('/')[-1] }}" alt="대표사진" style="max-width:420px;max-height:320px;width:100%;height:auto;object-fit:cover;border-radius:12px;box-shadow:0 2px 12px rgba(0,0,0,0.09);margin-bottom:18px;">
+    </a>
+    {% endif %}
+    <a href="/article/{{ articles[0]['기사번호'] }}" style="font-size:1.5em;font-weight:700;display:block;margin-bottom:8px;">{{ articles[0]['기사제목'] }}</a>
+    <div style="color:#444;font-size:1.08em;margin-bottom:10px;">
+        {{ articles[0]['기사요약'] }}
+    </div>
+    <small style="color:#888;">{{ articles[0]['작성일자']|datetime_format }} | {{ articles[0]['기자성명'] }}{% if articles[0]['기자직함'] %} {{ articles[0]['기자직함'] }}{% endif %}</small>
+</div>
+{% endif %}
+<div class="article-list">
+    {% for article in articles[1:] %}
+    <div class="article-item">
+        <div style="display:flex;align-items:flex-start;gap:16px;">
+            {% if article['대표사진경로'] %}
+            <a href="/article/{{ article['기사번호'] }}">
+                <img src="/static/images/photo/{{ article['대표사진경로'].split('/')[-1] }}" alt="대표사진" style="width:64px;height:48px;object-fit:cover;border-radius:6px;box-shadow:0 1px 4px rgba(0,0,0,0.07);">
+            </a>
+            {% endif %}
+            <div style="flex:1;min-width:0;">
+                <a href="/article/{{ article['기사번호'] }}" title="{{ article['기사요약'] }}" style="font-size:1.15em;font-weight:600;">{{ article['기사제목'] }}</a><br>
+                <span style="color:#555;font-size:0.98em;">{{ article['기사요약'] }}</span><br>
+                <small>{{ article['작성일자']|datetime_format }} | {{ article['기자성명'] }}{% if article['기자직함'] %} {{ article['기자직함'] }}{% endif %}</small>
+            </div>
+        </div>
+    </div>
     {% endfor %}
-</ul>
+</div>
 {% endblock %}
