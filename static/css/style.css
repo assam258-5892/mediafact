@@ -40,12 +40,15 @@ a, a:visited, a:hover, a:active {
 a:hover {
     color: #0056b3 !important;
 }
+
 body > header,
 body > main,
 body > footer {
-    width: 80%;
-    margin-left: 10%;
-    margin-right: 10%;
+    max-width: 1280px;
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
+    box-sizing: border-box;
 }
 /* 풋터 텍스트를 전체 페이지에서 좌우 중앙 정렬 */
 .footer-center {
