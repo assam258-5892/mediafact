@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block title %}기사 검색 결과{% endblock %}
+{% block content %}
+<h2>검색 결과</h2>
+{% if articles %}
+<ul>
+    {% for article in articles %}
+    <li>
+        <a href="/article/{{ article['기사번호'] }}" title="{{ article['기사요약'] }}">{{ article['기사제목'] }}</a>
+        <small>{{ article['작성일자'] }} | {{ article['기자성명'] }}{% if article['기자직함'] %} {{ article['기자직함'] }}{% endif %}</small>
+    </li>
+    {% endfor %}
+</ul>
+{% else %}
+<p>검색 결과가 없습니다.</p>
+{% endif %}
+{% endblock %}

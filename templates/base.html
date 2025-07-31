@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}미디어팩트 신문{% endblock %}</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+    <header>
+        <h1><a href="/">미디어팩트 신문</a></h1>
+        <nav>
+            <a href="/">홈</a> |
+            <a href="/photo">사진 갤러리</a> |
+            <form action="/search" method="get" style="display:inline;">
+                <input type="text" name="q" placeholder="검색어" value="{{ query|default('') }}">
+                <button type="submit">검색</button>
+            </form>
+        </nav>
+    </header>
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+    <footer>
+        <small>© 미디어팩트 신문</small>
+    </footer>
+</body>
+</html>

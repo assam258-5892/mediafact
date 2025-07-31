@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block title %}{{ article['기사제목'] }}{% endblock %}
+{% block content %}
+<h2>{{ article['기사제목'] }}</h2>
+{% if article['기사부제'] %}<h3>{{ article['기사부제'] }}</h3>{% endif %}
+<p><strong>기자:</strong> <a href="/reporter/{{ reporter['기자번호'] }}">{{ reporter['기자성명'] }}{% if reporter['기자직함'] %} {{ reporter['기자직함'] }}{% endif %}</a></p>
+<p><strong>작성일:</strong> {{ article['작성일자'] }}</p>
+<div>{{ article['기사내용'] }}</div>
+{% if photos %}
+<h4>사진</h4>
+<ul>
+    {% for photo in photos %}
+    <li><img src="/static/images/photo/{{ photo['사진경로'].split('/')[-1] }}" alt="{{ photo['사진설명'] }}" style="max-width:300px;"></li>
+    {% endfor %}
+</ul>
+{% endif %}
+{% endblock %}

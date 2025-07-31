@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block title %}사진 갤러리{% endblock %}
+{% block content %}
+<h2>사진 갤러리</h2>
+<ul>
+    {% for photo in photos %}
+    <li>
+        <img src="/static/images/photo/{{ photo['사진경로'].split('/')[-1] }}" alt="{{ photo['사진설명'] }}" style="max-width:300px;">
+        <p>{{ photo['사진설명'] }}</p>
+    </li>
+    {% endfor %}
+</ul>
+{% endblock %}
