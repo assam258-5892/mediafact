@@ -25,6 +25,7 @@ erDiagram
         TEXT 기사내용
         TIMESTAMP 작성일자
         TIMESTAMP 수정일자
+        INTEGER 조회횟수
         INTEGER 삭제여부
     }
     사진 {

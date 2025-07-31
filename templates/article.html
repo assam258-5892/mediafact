@@ -4,7 +4,8 @@
 <h2>{{ article['기사제목'] }}</h2>
 {% if article['기사부제'] %}<h3>{{ article['기사부제'] }}</h3>{% endif %}
 <p><strong>기자:</strong> <a href="/reporter/{{ reporter['기자번호'] }}">{{ reporter['기자성명'] }}{% if reporter['기자직함'] %} {{ reporter['기자직함'] }}{% endif %}</a></p>
-<p><strong>작성일:</strong> {{ article['작성일자'] | datetime_format }}</p>
+<p><strong>작성일:</strong> {{ article['작성일자'] | datetime_format }}
+<span style="margin-left:20px;"><strong>조회:</strong> {{ article['조회횟수'] }}</span></p>
 <div>{{ article['기사내용'] }}</div>
 {% if photos %}
 <h4>사진</h4>
