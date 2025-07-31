@@ -2,14 +2,23 @@
 {% block title %}사진 갤러리{% endblock %}
 {% block content %}
 <h2>사진 갤러리</h2>
-<ul>
+<div class="photo-list">
     {% for photo in photos %}
-    <li>
+    <div class="photo-item">
         <a href="/photo/{{ photo['사진연번'] }}">
-            <img src="/static/images/photo/{{ photo['사진경로'].split('/')[-1] }}" alt="{{ photo['사진설명'] }}" style="max-width:300px;">
+            <img src="/static/images/photo/{{ photo['사진경로'].split('/')[-1] }}" alt="{{ photo['사진설명'] }}">
         </a>
         <p>{{ photo['사진설명'] }}</p>
-    </li>
+    </div>
     {% endfor %}
-</ul>
+</div>
+<div class="photo-pagination" style="text-align:center; margin:24px 0;">
+    {% if page > 1 %}
+        <a href="/photo?page={{ page-1 }}" class="photo-page-btn">이전</a>
+    {% endif %}
+    <span style="margin:0 12px; color:#555; font-size:1.08em;">{{ page }} / {{ total_page }}</span>
+    {% if page < total_page %}
+        <a href="/photo?page={{ page+1 }}" class="photo-page-btn">다음</a>
+    {% endif %}
+</div>
 {% endblock %}

@@ -1,3 +1,38 @@
+
+/* 사진 갤러리 그리드 레이아웃 */
+.photo-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    justify-content: center;
+    margin: 24px 0;
+}
+.photo-item {
+    background: #fff;
+    border: 1px solid #ececec;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    padding: 12px;
+    width: 220px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 12px;
+}
+.photo-item img {
+    max-width: 200px;
+    max-height: 160px;
+    border-radius: 6px;
+    margin-bottom: 8px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+}
+.photo-item p {
+    color: #555;
+    font-size: 0.98em;
+    margin: 0;
+    text-align: center;
+    word-break: keep-all;
+}
 a, a:visited, a:hover, a:active {
     text-decoration: none !important;
     color: #222 !important;

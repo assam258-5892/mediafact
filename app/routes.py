@@ -105,9 +105,14 @@ def reporter(reporter_id):
 @app.route('/photo')
 def photo_gallery():
     db = get_db()
-    photos = db.execute('SELECT * FROM 사진 ORDER BY 등록일자 DESC').fetchall()
+    page = int(request.args.get('page', 1))
+    per_page = 20
+    offset = (page - 1) * per_page
+    total = db.execute('SELECT COUNT(*) FROM 사진').fetchone()[0]
+    total_page = (total + per_page - 1) // per_page
+    photos = db.execute('SELECT * FROM 사진 ORDER BY 등록일자 DESC LIMIT ? OFFSET ?', (per_page, offset)).fetchall()
     categories = db.execute('SELECT * FROM 분류 ORDER BY 분류번호').fetchall()
-    return render_template('photo.html', photos=photos, categories=categories)
+    return render_template('photo.html', photos=photos, categories=categories, page=page, total_page=total_page)
 
 # 사진 상세
 @app.route('/photo/<int:photo_id>')
