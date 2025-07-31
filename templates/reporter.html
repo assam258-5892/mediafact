@@ -4,9 +4,16 @@
 <h2>{{ reporter['기자성명'] }} 기자의 기사</h2>
 <ul>
     {% for article in articles %}
-    <li>
-        <a href="/article/{{ article['기사번호'] }}" title="{{ article['기사요약'] }}">{{ article['기사제목'] }}</a>
-        <small>{{ article['작성일자']|datetime_format }} | {{ article['기자성명'] }}{% if article['기자직함'] %} {{ article['기자직함'] }}{% endif %}</small>
+    <li style="display:flex;align-items:center;gap:12px;min-height:60px;">
+        {% if article['대표사진경로'] %}
+            <a href="/article/{{ article['기사번호'] }}">
+                <img src="/static/images/photo/{{ article['대표사진경로'].split('/')[-1] }}" alt="대표사진" style="width:60px;height:45px;object-fit:cover;border-radius:4px;border:1px solid #eee;box-shadow:0 1px 4px rgba(0,0,0,0.07);margin-right:6px;">
+            </a>
+        {% endif %}
+        <div style="flex:1;min-width:0;">
+            <a href="/article/{{ article['기사번호'] }}" title="{{ article['기사요약'] }}">{{ article['기사제목'] }}</a><br>
+            <small>{{ article['작성일자']|datetime_format }} | {{ article['기자성명'] }}{% if article['기자직함'] %} {{ article['기자직함'] }}{% endif %}</small>
+        </div>
     </li>
     {% endfor %}
 </ul>

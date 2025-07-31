@@ -115,7 +115,8 @@ def category(category_id):
 def reporter(reporter_id):
     db = get_db()
     articles = db.execute('''
-        SELECT 기사.*, 분류.분류명칭, 기자.기자성명, 기자.기자직함
+        SELECT 기사.*, 분류.분류명칭, 기자.기자성명, 기자.기자직함,
+        (SELECT 사진경로 FROM 사진 WHERE 사진.기사번호 = 기사.기사번호 ORDER BY 사진.등록일자 ASC, 사진.사진번호 ASC LIMIT 1) AS 대표사진경로
         FROM 기사
         JOIN 분류 ON 기사.분류번호 = 분류.분류번호
         JOIN 기자 ON 기사.기자번호 = 기자.기자번호
@@ -158,7 +159,8 @@ def search():
     if query:
         try:
             sql = '''
-                SELECT 기사.*, 분류.분류명칭, 기자.기자성명, 기자.기자직함
+                SELECT 기사.*, 분류.분류명칭, 기자.기자성명, 기자.기자직함,
+                (SELECT 사진경로 FROM 사진 WHERE 사진.기사번호 = 기사.기사번호 ORDER BY 사진.등록일자 ASC, 사진.사진번호 ASC LIMIT 1) AS 대표사진경로
                 FROM 기사전문색인
                 JOIN 기사 ON 기사전문색인.기사번호 = 기사.기사번호
                 JOIN 분류 ON 기사.분류번호 = 분류.분류번호
