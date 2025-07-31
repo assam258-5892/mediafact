@@ -5,12 +5,13 @@
 erDiagram
     분류 {
         INTEGER 분류번호 PK
-        TEXT 분류이름
+        TEXT 분류명칭
         TEXT 분류설명
     }
     기자 {
         INTEGER 기자번호 PK
         TEXT 기자성명
+        TEXT 기자직함
         TEXT 메일주소
         TEXT 암호해시
     }
