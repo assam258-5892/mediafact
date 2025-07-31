@@ -61,3 +61,14 @@ CREATE TABLE IF NOT EXISTS 사진 (
     FOREIGN KEY (기자번호) REFERENCES 기자(기자번호),
     UNIQUE (기사번호, 사진번호)
 );
+
+-- 기사 및 기자명 전문검색을 위한 FTS5 색인 테이블
+-- 기사제목, 기사부제, 기사요약, 기사내용, 기자성명 컬럼을 포함
+CREATE VIRTUAL TABLE IF NOT EXISTS 기사전문색인 USING fts5(
+    기사번호 UNINDEXED,
+    기사제목,
+    기사부제,
+    기사요약,
+    기사내용,
+    기자성명
+);
