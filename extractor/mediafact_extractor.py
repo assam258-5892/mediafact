@@ -224,7 +224,7 @@ if __name__ == '__main__':
             기사내용 = article['기사내용'].replace("'", "''")
             key = (article['기자성명'], article['기자직함'], article['메일주소'])
             기자번호 = reporter_number_map.get(key, 1)
-            sql_file.write(f"INSERT INTO 기사 (기사번호, 분류번호, 기자번호, 대표사진, 기사제목, 기사부제, 기사내용, 작성일자) VALUES ({기사번호}, {분류번호}, {기자번호}, {main_photo_seq if main_photo_seq else 'NULL'}, '{기사제목}', '{기사부제}', '{기사내용}', '{article['작성일자']}');\n")
+            sql_file.write(f"INSERT INTO 기사 (기사번호, 분류번호, 기자번호, 대표사진, 기사제목, 기사부제, 기사내용, 작성일자, 공개여부) VALUES ({기사번호}, {분류번호}, {기자번호}, {main_photo_seq if main_photo_seq else 'NULL'}, '{기사제목}', '{기사부제}', '{기사내용}', '{article['작성일자']}', 1);\n")
         sql_file.write('\n')
 
         # 사진 테이블

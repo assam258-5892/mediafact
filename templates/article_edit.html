@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block title %}기사 편집{% endblock %}
+{% block content %}
+<h2>기사 편집</h2>
+<form method="post">
+    <label for="title">제목</label><br>
+    <input type="text" id="title" name="title" value="{{ article['기사제목'] }}" style="width:100%;"><br><br>
+    <label for="summary">요약</label><br>
+    <textarea id="summary" name="summary" rows="2" style="width:100%;">{{ article['기사요약'] }}</textarea><br><br>
+    <label for="content">본문</label><br>
+    <textarea id="content" name="content" rows="40" style="width:100%;">{{ article['기사내용'] }}</textarea><br><br>
+    <label for="publish">공개여부</label><br>
+    <select id="publish" name="publish" style="width:100%;">
+        <option value="1" {% if article['공개여부'] == 1 %}selected{% endif %}>공개</option>
+        <option value="0" {% if article['공개여부'] == 0 %}selected{% endif %}>비공개</option>
+    </select><br><br>
+    <button type="submit">저장</button>
+    <a href="{{ url_for('article_detail', article_id=article['기사번호']) }}">취소</a>
+</form>
+{% endblock %}

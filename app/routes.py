@@ -27,7 +27,7 @@ def get_db():
 @app.route('/')
 def index():
     db = get_db()
-    articles = db.execute('SELECT 기사.*, 분류.분류명칭 FROM 기사 JOIN 분류 ON 기사.분류번호 = 분류.분류번호 ORDER BY 작성일자 DESC LIMIT 20').fetchall()
+    articles = db.execute('SELECT 기사.*, 분류.분류명칭 FROM 기사 JOIN 분류 ON 기사.분류번호 = 분류.분류번호 WHERE 기사.공개여부=1 ORDER BY 작성일자 DESC LIMIT 20').fetchall()
     categories = db.execute('SELECT * FROM 분류 ORDER BY 분류번호').fetchall()
     return render_template('index.html', articles=articles, categories=categories)
 
@@ -39,7 +39,7 @@ def article_detail(article_id):
         # 조회횟수 증가
         db.execute('UPDATE 기사 SET 조회횟수 = 조회횟수 + 1 WHERE 기사번호=?', (article_id,))
         db.commit()
-        article = db.execute('SELECT 기사.*, 분류.분류명칭 FROM 기사 JOIN 분류 ON 기사.분류번호 = 분류.분류번호 WHERE 기사번호=?', (article_id,)).fetchone()
+        article = db.execute('SELECT 기사.*, 분류.분류명칭 FROM 기사 JOIN 분류 ON 기사.분류번호 = 분류.분류번호 WHERE 기사번호=? AND 기사.공개여부=1', (article_id,)).fetchone()
         photos = db.execute('SELECT * FROM 사진 WHERE 기사번호=?', (article_id,)).fetchall()
         reporter = db.execute('SELECT * FROM 기자 WHERE 기자번호=?', (article['기자번호'],)).fetchone() if article else None
     except Exception as e:
@@ -47,11 +47,27 @@ def article_detail(article_id):
     categories = db.execute('SELECT * FROM 분류 ORDER BY 분류번호').fetchall()
     return render_template('article.html', article=article, photos=photos, reporter=reporter, categories=categories)
 
+# 기사 편집
+@app.route('/article/<int:article_id>/edit', methods=['GET', 'POST'])
+def article_edit(article_id):
+    db = get_db()
+    if request.method == 'POST':
+        title = request.form.get('title', '')
+        summary = request.form.get('summary', '')
+        content = request.form.get('content', '')
+        publish = int(request.form.get('publish', 0))
+        db.execute('UPDATE 기사 SET 기사제목=?, 기사요약=?, 기사내용=?, 공개여부=? WHERE 기사번호=?', (title, summary, content, publish, article_id))
+        db.commit()
+        return redirect(url_for('article_detail', article_id=article_id))
+    article = db.execute('SELECT * FROM 기사 WHERE 기사번호=?', (article_id,)).fetchone()
+    categories = db.execute('SELECT * FROM 분류 ORDER BY 분류번호').fetchall()
+    return render_template('article_edit.html', article=article, categories=categories)
+
 # 카테고리별 기사
 @app.route('/category/<int:category_id>')
 def category(category_id):
     db = get_db()
-    articles = db.execute('SELECT 기사.*, 분류.분류명칭 FROM 기사 JOIN 분류 ON 기사.분류번호 = 분류.분류번호 WHERE 기사.분류번호=? ORDER BY 작성일자 DESC', (category_id,)).fetchall()
+    articles = db.execute('SELECT 기사.*, 분류.분류명칭 FROM 기사 JOIN 분류 ON 기사.분류번호 = 분류.분류번호 WHERE 기사.분류번호=? AND 기사.공개여부=1 ORDER BY 작성일자 DESC', (category_id,)).fetchall()
     category_info = db.execute('SELECT * FROM 분류 WHERE 분류번호=?', (category_id,)).fetchone()
     categories = db.execute('SELECT * FROM 분류 ORDER BY 분류번호').fetchall()
     return render_template('category.html', articles=articles, category_info=category_info, categories=categories)
@@ -60,7 +76,7 @@ def category(category_id):
 @app.route('/reporter/<int:reporter_id>')
 def reporter(reporter_id):
     db = get_db()
-    articles = db.execute('SELECT 기사.*, 분류.분류명칭 FROM 기사 JOIN 분류 ON 기사.분류번호 = 분류.분류번호 WHERE 기자번호=? ORDER BY 작성일자 DESC', (reporter_id,)).fetchall()
+    articles = db.execute('SELECT 기사.*, 분류.분류명칭 FROM 기사 JOIN 분류 ON 기사.분류번호 = 분류.분류번호 WHERE 기자번호=? AND 기사.공개여부=1 ORDER BY 작성일자 DESC', (reporter_id,)).fetchall()
     reporter = db.execute('SELECT * FROM 기자 WHERE 기자번호=?', (reporter_id,)).fetchone()
     categories = db.execute('SELECT * FROM 분류 ORDER BY 분류번호').fetchall()
     return render_template('reporter.html', articles=articles, reporter=reporter, categories=categories)
@@ -91,7 +107,7 @@ def search():
     articles = []
     if query:
         try:
-            sql = '''SELECT 기사.*, 분류.분류명칭 FROM 기사전문색인 JOIN 기사 ON 기사전문색인.기사번호 = 기사.기사번호 JOIN 분류 ON 기사.분류번호 = 분류.분류번호 WHERE 기사전문색인 MATCH ? ORDER BY 기사.작성일자 DESC'''
+            sql = '''SELECT 기사.*, 분류.분류명칭 FROM 기사전문색인 JOIN 기사 ON 기사전문색인.기사번호 = 기사.기사번호 JOIN 분류 ON 기사.분류번호 = 분류.분류번호 WHERE 기사전문색인 MATCH ? AND 기사.공개여부=1 ORDER BY 기사.작성일자 DESC'''
             articles = db.execute(sql, (query,)).fetchall()
         except Exception as e:
             articles = []

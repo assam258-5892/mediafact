@@ -42,7 +42,7 @@ CREATE TABLE IF NOT EXISTS 기사 (
     작성일자 TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 최초 작성일
     수정일자 TIMESTAMP, -- 마지막 수정일
     조회횟수 INTEGER DEFAULT 0, -- 기사 조회횟수
-    게시여부 INTEGER DEFAULT 0, -- 0: 비공개, 1: 공개
+    공개여부 INTEGER DEFAULT 0, -- 0: 비공개, 1: 공개
     삭제여부 INTEGER DEFAULT 0, -- 0: 정상, 1: 삭제됨
     FOREIGN KEY (분류번호) REFERENCES 분류(분류번호),
     FOREIGN KEY (기자번호) REFERENCES 기자(기자번호)
