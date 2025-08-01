@@ -7,7 +7,7 @@ import sqlite3
 import markdown
 from datetime import datetime
 from mecab import MeCab
-from flask import Flask, render_template, request, redirect, url_for, g
+from flask import Flask, render_template, request, redirect, url_for, g, Response
 
 mecab = MeCab()
 
@@ -260,6 +260,65 @@ def admin_reindex():
                     mecab_morphs_text(a['기사내용'] if a else '')))
     db.commit()
     return '색인 재생성 완료!'
+
+@app.route('/sitemap.xml')
+def sitemap():
+    db = get_db()
+    urls = []
+    # 메인
+    urls.append({
+        'loc': url_for('index', _external=True),
+        'lastmod': datetime.now().strftime('%Y-%m-%d'),
+        'changefreq': 'daily',
+        'priority': '1.0'
+    })
+    # 기사 (수정일자 있으면, 없으면 작성일자)
+    articles = db.execute('SELECT 기사번호, 작성일자, 수정일자 FROM 기사 WHERE 공개여부=1').fetchall()
+    for a in articles:
+        lastmod = ''
+        if a['수정일자']:
+            lastmod = a['수정일자'][:10]
+        elif a['작성일자']:
+            lastmod = a['작성일자'][:10]
+        urls.append({
+            'loc': url_for('article_detail', article_id=a['기사번호'], _external=True),
+            'lastmod': lastmod,
+            'changefreq': 'weekly',
+            'priority': '0.8'
+        })
+    # 카테고리
+    categories = db.execute('SELECT 분류번호 FROM 분류').fetchall()
+    for c in categories:
+        urls.append({
+            'loc': url_for('category', category_id=c['분류번호'], _external=True),
+            'changefreq': 'weekly',
+            'priority': '0.6'
+        })
+    # 사진 (등록일자)
+    photos = db.execute('SELECT 사진연번, 등록일자 FROM 사진').fetchall()
+    for p in photos:
+        lastmod = p['등록일자'][:10] if p['등록일자'] else ''
+        urls.append({
+            'loc': url_for('photo_detail', photo_id=p['사진연번'], _external=True),
+            'lastmod': lastmod,
+            'changefreq': 'monthly',
+            'priority': '0.5'
+        })
+    # XML 생성
+    xml = ['<?xml version="1.0" encoding="UTF-8"?>']
+    xml.append('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">')
+    for u in urls:
+        xml.append('  <url>')
+        xml.append(f'    <loc>{u["loc"]}</loc>')
+        if u.get('lastmod'):
+            xml.append(f'    <lastmod>{u["lastmod"]}</lastmod>')
+        if u.get('changefreq'):
+            xml.append(f'    <changefreq>{u["changefreq"]}</changefreq>')
+        if u.get('priority'):
+            xml.append(f'    <priority>{u["priority"]}</priority>')
+        xml.append('  </url>')
+    xml.append('</urlset>')
+    return Response('\n'.join(xml), mimetype='application/xml')
 
 @app.teardown_appcontext
 def close_db(error):
