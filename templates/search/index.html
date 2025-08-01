@@ -2,13 +2,33 @@
 {% block title %}기사 검색 결과{% endblock %}
 {% block content %}
 <h2>검색 결과</h2>
-{% if articles %}
-<div class="article-list">
-    {% for article in articles %}
-        {% include 'article/item.html' %}
-    {% endfor %}
-</div>
+{% if search_type == 'photo' %}
+<h3>사진 검색 결과</h3>
+    {% if photos %}
+    <div class="photo-list">
+        {% for photo in photos %}
+        <div class="photo-item">
+            <a href="/photo/{{ photo['사진연번'] }}">
+                <img src="/static/images/photo/{{ photo['사진경로'].split('/')[-1] }}" alt="{{ photo['사진설명'] }}" style="max-width:180px;">
+            </a>
+            <p>{{ photo['사진설명'] }}</p>
+            <div style="font-size:0.95em; color:#888; margin-top:2px;">{{ photo['기사제목'] }}</div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p>사진 검색 결과가 없습니다.</p>
+    {% endif %}
 {% else %}
-<p>검색 결과가 없습니다.</p>
+<h3>기사 검색 결과</h3>
+    {% if articles %}
+    <div class="article-list">
+        {% for article in articles %}
+            {% include 'article/item.html' %}
+        {% endfor %}
+    </div>
+    {% else %}
+    <p>검색 결과가 없습니다.</p>
+    {% endif %}
 {% endif %}
 {% endblock %}

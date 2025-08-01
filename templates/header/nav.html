@@ -12,6 +12,9 @@
         <div class="nav-right">
             <form action="/search" method="get" class="nav-search">
                 <input type="text" name="q" placeholder="검색어를 입력하세요" value="{{ query|default('') }}">
+                {% if search_type %}
+                <input type="hidden" name="type" value="{{ search_type }}">
+                {% endif %}
                 <button type="submit">검색</button>
             </form>
         </div>

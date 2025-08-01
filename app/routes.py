@@ -147,7 +147,7 @@ def photo_gallery():
     total_page = (total + per_page - 1) // per_page
     photos = db.execute('SELECT * FROM 사진 ORDER BY 등록일자 DESC LIMIT ? OFFSET ?', (per_page, offset)).fetchall()
     categories = db.execute('SELECT * FROM 분류 ORDER BY 분류번호').fetchall()
-    return render_template('photo/index.html', photos=photos, categories=categories, page=page, total_page=total_page)
+    return render_template('photo/index.html', photos=photos, categories=categories, page=page, total_page=total_page, search_type='photo')
 
 # 사진 상세
 @app.route('/photo/<int:photo_id>')
@@ -157,7 +157,7 @@ def photo_detail(photo_id):
     article = db.execute('SELECT 기사제목, 기사부제, 기사요약, 기사번호 FROM 기사 WHERE 기사번호=?', (photo['기사번호'],)).fetchone() if photo else None
     reporter = db.execute('SELECT * FROM 기자 WHERE 기자번호=?', (photo['기자번호'],)).fetchone() if photo else None
     categories = db.execute('SELECT * FROM 분류 ORDER BY 분류번호').fetchall()
-    return render_template('photo/detail.html', photo=photo, article=article, reporter=reporter, categories=categories)
+    return render_template('photo/detail.html', photo=photo, article=article, reporter=reporter, categories=categories, search_type='photo')
 
 # 기사 검색(FTS5)
 @app.route('/search')
@@ -165,23 +165,39 @@ def search():
     query = request.args.get('q', '')
     db = get_db()
     articles = []
+    photos = []
+    search_type = request.args.get('type', '')
     if query:
         try:
-            sql = '''
-                SELECT 기사.*, 기사.기사부제, 기사.기사요약, 분류.분류명칭, 기자.기자성명, 기자.기자직함,
-                (SELECT 사진경로 FROM 사진 WHERE 사진.기사번호 = 기사.기사번호 ORDER BY 사진.등록일자 ASC, 사진.사진번호 ASC LIMIT 1) AS 대표사진경로
-                FROM 기사전문색인
-                JOIN 기사 ON 기사전문색인.기사번호 = 기사.기사번호
-                JOIN 분류 ON 기사.분류번호 = 분류.분류번호
-                JOIN 기자 ON 기사.기자번호 = 기자.기자번호
-                WHERE 기사전문색인 MATCH ? AND 기사.공개여부=1
-                ORDER BY 기사.작성일자 DESC
-            '''
-            articles = db.execute(sql, (query,)).fetchall()
+            if search_type == 'photo':
+                # 사진 검색만
+                sql_photo = '''
+                    SELECT 사진.*, 기사.기사제목, 기사.기사부제, 기사.기사요약, 기사.기사내용
+                    FROM 사진전문색인
+                    JOIN 사진 ON 사진전문색인.사진연번 = 사진.사진연번
+                    JOIN 기사 ON 사진.기사번호 = 기사.기사번호
+                    WHERE 사진전문색인 MATCH ? AND 사진.삭제여부=0
+                    ORDER BY 사진.등록일자 DESC
+                '''
+                photos = db.execute(sql_photo, (query,)).fetchall()
+            else:
+                # 기사 검색만
+                sql_article = '''
+                    SELECT 기사.*, 기사.기사부제, 기사.기사요약, 분류.분류명칭, 기자.기자성명, 기자.기자직함,
+                    (SELECT 사진경로 FROM 사진 WHERE 사진.기사번호 = 기사.기사번호 ORDER BY 사진.등록일자 ASC, 사진.사진번호 ASC LIMIT 1) AS 대표사진경로
+                    FROM 기사전문색인
+                    JOIN 기사 ON 기사전문색인.기사번호 = 기사.기사번호
+                    JOIN 분류 ON 기사.분류번호 = 분류.분류번호
+                    JOIN 기자 ON 기사.기자번호 = 기자.기자번호
+                    WHERE 기사전문색인 MATCH ? AND 기사.공개여부=1
+                    ORDER BY 기사.작성일자 DESC
+                '''
+                articles = db.execute(sql_article, (query,)).fetchall()
         except Exception as e:
             articles = []
+            photos = []
     categories = db.execute('SELECT * FROM 분류 ORDER BY 분류번호').fetchall()
-    return render_template('search/index.html', articles=articles, query=query, categories=categories)
+    return render_template('search/index.html', articles=articles, photos=photos, query=query, categories=categories, search_type=search_type)
 
 @app.teardown_appcontext
 def close_db(error):
