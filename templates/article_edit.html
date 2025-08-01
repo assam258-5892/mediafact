@@ -5,6 +5,8 @@
 <form method="post">
     <label for="title">제목</label><br>
     <input type="text" id="title" name="title" value="{{ article['기사제목'] }}" style="width:100%;"><br><br>
+    <label for="subtitle">부제</label><br>
+    <input type="text" id="subtitle" name="subtitle" value="{{ article['기사부제'] }}" style="width:100%;"><br><br>
     <label for="summary">요약</label><br>
     <textarea id="summary" name="summary" rows="2" style="width:100%;">{{ article['기사요약'] }}</textarea><br><br>
     <label for="content">본문</label><br>

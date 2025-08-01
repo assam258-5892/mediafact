@@ -1,6 +1,9 @@
-from flask import Flask, render_template, request, redirect, url_for, g
-from datetime import datetime
+import re
 import sqlite3
+from datetime import datetime
+
+import markdown
+from flask import Flask, render_template, request, redirect, url_for, g
 
 DATABASE = 'db/mediafact.db'
 
@@ -53,9 +56,7 @@ def article_detail(article_id):
         photos = db.execute('SELECT * FROM 사진 WHERE 기사번호=?', (article_id,)).fetchall()
         reporter = db.execute('SELECT * FROM 기자 WHERE 기자번호=?', (article['기자번호'],)).fetchone() if article else None
         # 기사내용 [사진:N] 치환 후 마크다운 변환
-        import markdown
         def replace_photo_tag(text, photos):
-            import re
             def photo_replacer(match):
                 num = int(match.group(1))
                 for photo in photos:
@@ -75,7 +76,7 @@ def article_detail(article_id):
     return render_template('article.html', article=article, photos=photos, reporter=reporter, categories=categories, article_content_html=article_content_html)
 
 # 기사 편집
-@app.route('/article/<int:article_id>/edit', methods=['GET', 'POST'])
+@app.route('/edit/<int:article_id>', methods=['GET', 'POST'])
 def article_edit(article_id):
     db = get_db()
     if request.method == 'POST':
@@ -83,7 +84,6 @@ def article_edit(article_id):
         summary = request.form.get('summary', '')
         content = request.form.get('content', '')
         publish = int(request.form.get('publish', 0))
-        from datetime import datetime
         now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         db.execute('UPDATE 기사 SET 기사제목=?, 기사요약=?, 기사내용=?, 공개여부=?, 수정일자=? WHERE 기사번호=?', (title, summary, content, publish, now, article_id))
         db.commit()
@@ -98,7 +98,7 @@ def article_edit(article_id):
 def category(category_id):
     db = get_db()
     articles = db.execute('''
-        SELECT 기사.*, 분류.분류명칭, 기자.기자성명, 기자.기자직함,
+        SELECT 기사.*, 기사.기사부제, 기사.기사요약, 분류.분류명칭, 기자.기자성명, 기자.기자직함,
         (SELECT 사진경로 FROM 사진 WHERE 사진.기사번호 = 기사.기사번호 ORDER BY 사진.등록일자 ASC, 사진.사진번호 ASC LIMIT 1) AS 대표사진경로
         FROM 기사
         JOIN 분류 ON 기사.분류번호 = 분류.분류번호
@@ -115,7 +115,7 @@ def category(category_id):
 def reporter(reporter_id):
     db = get_db()
     articles = db.execute('''
-        SELECT 기사.*, 분류.분류명칭, 기자.기자성명, 기자.기자직함,
+        SELECT 기사.*, 기사.기사부제, 기사.기사요약, 분류.분류명칭, 기자.기자성명, 기자.기자직함,
         (SELECT 사진경로 FROM 사진 WHERE 사진.기사번호 = 기사.기사번호 ORDER BY 사진.등록일자 ASC, 사진.사진번호 ASC LIMIT 1) AS 대표사진경로
         FROM 기사
         JOIN 분류 ON 기사.분류번호 = 분류.분류번호
@@ -145,7 +145,7 @@ def photo_gallery():
 def photo_detail(photo_id):
     db = get_db()
     photo = db.execute('SELECT * FROM 사진 WHERE 사진연번=?', (photo_id,)).fetchone()
-    article = db.execute('SELECT 기사제목, 기사번호 FROM 기사 WHERE 기사번호=?', (photo['기사번호'],)).fetchone() if photo else None
+    article = db.execute('SELECT 기사제목, 기사부제, 기사요약, 기사번호 FROM 기사 WHERE 기사번호=?', (photo['기사번호'],)).fetchone() if photo else None
     reporter = db.execute('SELECT * FROM 기자 WHERE 기자번호=?', (photo['기자번호'],)).fetchone() if photo else None
     categories = db.execute('SELECT * FROM 분류 ORDER BY 분류번호').fetchall()
     return render_template('photo_detail.html', photo=photo, article=article, reporter=reporter, categories=categories)
@@ -159,7 +159,7 @@ def search():
     if query:
         try:
             sql = '''
-                SELECT 기사.*, 분류.분류명칭, 기자.기자성명, 기자.기자직함,
+                SELECT 기사.*, 기사.기사부제, 기사.기사요약, 분류.분류명칭, 기자.기자성명, 기자.기자직함,
                 (SELECT 사진경로 FROM 사진 WHERE 사진.기사번호 = 기사.기사번호 ORDER BY 사진.등록일자 ASC, 사진.사진번호 ASC LIMIT 1) AS 대표사진경로
                 FROM 기사전문색인
                 JOIN 기사 ON 기사전문색인.기사번호 = 기사.기사번호

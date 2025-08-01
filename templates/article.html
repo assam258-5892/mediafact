@@ -8,7 +8,7 @@
 {% if article['기사부제'] %}<h3>{{ article['기사부제'] }}</h3>{% endif %}
 <div class="article-meta-flex" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
     <div>
-        <strong>기자:</strong> <a href="/reporter/{{ reporter['기자번호'] }}">{{ reporter['기자성명'] }}{% if reporter['기자직함'] %} {{ reporter['기자직함'] }}{% endif %}</a>
+        <strong>기자:</strong> <a href="/reporter/{{ reporter['기자번호'] }}">{{ reporter['기자성명'] }}{% if reporter['기자직함'] %} {{ reporter['기자직함'] }}{% else %} 기자{% endif %}</a>
     </div>
     <div style="color:#888; font-size:1.05em;">
         <strong>조회수:</strong> {{ article['조회횟수'] }}
