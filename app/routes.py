@@ -73,7 +73,7 @@ def article_detail(article_id):
     except Exception as e:
         article, photos, reporter, article_content_html = None, [], None, ''
     categories = db.execute('SELECT * FROM 분류 ORDER BY 분류번호').fetchall()
-    return render_template('article.html', article=article, photos=photos, reporter=reporter, categories=categories, article_content_html=article_content_html)
+    return render_template('article/index.html', article=article, photos=photos, reporter=reporter, categories=categories, article_content_html=article_content_html)
 
 # 기사 편집
 @app.route('/edit/<int:article_id>', methods=['GET', 'POST'])
@@ -93,7 +93,7 @@ def article_edit(article_id):
     article = db.execute('SELECT * FROM 기사 WHERE 기사번호=?', (article_id,)).fetchone()
     photos = db.execute('SELECT * FROM 사진 WHERE 기사번호=?', (article_id,)).fetchall()
     categories = db.execute('SELECT * FROM 분류 ORDER BY 분류번호').fetchall()
-    return render_template('article_edit.html', article=article, categories=categories, photos=photos)
+    return render_template('article/edit.html', article=article, categories=categories, photos=photos)
 
 # 카테고리별 기사
 @app.route('/category/<int:category_id>')
@@ -110,7 +110,7 @@ def category(category_id):
     ''', (category_id,)).fetchall()
     category_info = db.execute('SELECT * FROM 분류 WHERE 분류번호=?', (category_id,)).fetchone()
     categories = db.execute('SELECT * FROM 분류 ORDER BY 분류번호').fetchall()
-    return render_template('category.html', articles=articles, category_info=category_info, categories=categories)
+    return render_template('category/index.html', articles=articles, category_info=category_info, categories=categories)
 
 # 기자별 기사
 @app.route('/reporter/<int:reporter_id>')
@@ -127,7 +127,7 @@ def reporter(reporter_id):
     ''', (reporter_id,)).fetchall()
     reporter = db.execute('SELECT * FROM 기자 WHERE 기자번호=?', (reporter_id,)).fetchone()
     categories = db.execute('SELECT * FROM 분류 ORDER BY 분류번호').fetchall()
-    return render_template('reporter.html', articles=articles, reporter=reporter, categories=categories)
+    return render_template('reporter/index.html', articles=articles, reporter=reporter, categories=categories)
 
 # 사진 갤러리
 @app.route('/photo')
@@ -140,7 +140,7 @@ def photo_gallery():
     total_page = (total + per_page - 1) // per_page
     photos = db.execute('SELECT * FROM 사진 ORDER BY 등록일자 DESC LIMIT ? OFFSET ?', (per_page, offset)).fetchall()
     categories = db.execute('SELECT * FROM 분류 ORDER BY 분류번호').fetchall()
-    return render_template('photo.html', photos=photos, categories=categories, page=page, total_page=total_page)
+    return render_template('photo/index.html', photos=photos, categories=categories, page=page, total_page=total_page)
 
 # 사진 상세
 @app.route('/photo/<int:photo_id>')
@@ -150,7 +150,7 @@ def photo_detail(photo_id):
     article = db.execute('SELECT 기사제목, 기사부제, 기사요약, 기사번호 FROM 기사 WHERE 기사번호=?', (photo['기사번호'],)).fetchone() if photo else None
     reporter = db.execute('SELECT * FROM 기자 WHERE 기자번호=?', (photo['기자번호'],)).fetchone() if photo else None
     categories = db.execute('SELECT * FROM 분류 ORDER BY 분류번호').fetchall()
-    return render_template('photo_detail.html', photo=photo, article=article, reporter=reporter, categories=categories)
+    return render_template('photo/detail.html', photo=photo, article=article, reporter=reporter, categories=categories)
 
 # 기사 검색(FTS5)
 @app.route('/search')
@@ -174,7 +174,7 @@ def search():
         except Exception as e:
             articles = []
     categories = db.execute('SELECT * FROM 분류 ORDER BY 분류번호').fetchall()
-    return render_template('search.html', articles=articles, query=query, categories=categories)
+    return render_template('search/index.html', articles=articles, query=query, categories=categories)
 
 @app.teardown_appcontext
 def close_db(error):

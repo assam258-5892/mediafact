@@ -4,7 +4,7 @@
 <h2>{{ reporter['기자성명'] }}{% if reporter['기자직함'] %} {{ reporter['기자직함'] }}{% else %} 기자{% endif %}의 기사</h2>
 <div class="article-list">
     {% for article in articles %}
-        {% include 'article_item.html' %}
+        {% include 'article/item.html' %}
     {% endfor %}
 </div>
 {% endblock %}
