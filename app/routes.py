@@ -89,6 +89,8 @@ def article_edit(article_id):
         now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         db.execute('UPDATE 기사 SET 기사제목=?, 기사부제=?, 기사요약=?, 기사내용=?, 공개여부=?, 분류번호=?, 수정일자=? WHERE 기사번호=?',
                    (title, subtitle, summary, content, publish, category, now, article_id))
+        db.execute('REPLACE INTO 기사전문색인 (기사번호, 기사제목, 기사부제, 기사요약, 기사내용) VALUES (?, ?, ?, ?, ?)',
+                   (article_id, title, subtitle, summary, content))
         db.commit()
         return redirect(url_for('article_detail', article_id=article_id))
     article = db.execute('SELECT * FROM 기사 WHERE 기사번호=?', (article_id,)).fetchone()
