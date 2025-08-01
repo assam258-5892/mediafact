@@ -10,21 +10,42 @@
     <header>
         <h1><a href="/">미디어팩트 신문</a></h1>
         <nav>
-            <div class="nav-bar-flex">
-            <div class="nav-left">
-                <a href="/photo" class="nav-photo">사진 갤러리</a>
+            <!-- 데스크탑용 네비게이션 -->
+            <div class="nav-bar-flex nav-desktop">
+                <div class="nav-left">
+                    <a href="/photo" class="nav-photo">사진 갤러리</a>
+                </div>
+                <div class="nav-center">
+                    {% for category in categories %}
+                        <a href="/category/{{ category['분류번호'] }}" class="nav-category">{{ category['분류명칭'] }}</a>
+                    {% endfor %}
+                </div>
+                <div class="nav-right">
+                    <form action="/search" method="get" class="nav-search">
+                        <input type="text" name="q" placeholder="검색어를 입력하세요" value="{{ query|default('') }}">
+                        <button type="submit">검색</button>
+                    </form>
+                </div>
             </div>
-            <div class="nav-center">
-                {% for category in categories %}
-                    <a href="/category/{{ category['분류번호'] }}" class="nav-category">{{ category['분류명칭'] }}</a>
-                {% endfor %}
-            </div>
-            <div class="nav-right">
-                <form action="/search" method="get" class="nav-search">
-                    <input type="text" name="q" placeholder="검색어를 입력하세요" value="{{ query|default('') }}">
-                    <button type="submit">검색</button>
-                </form>
-            </div>
+            <!-- 모바일용 네비게이션 -->
+            <div class="nav-bar-flex nav-mobile">
+                <button class="nav-toggle" aria-label="메뉴 열기" type="button">
+                    <span class="nav-toggle-bar"></span>
+                    <span class="nav-toggle-bar"></span>
+                    <span class="nav-toggle-bar"></span>
+                </button>
+                <div class="nav-dropdown-menu">
+                    <a href="/photo" class="nav-photo">사진 갤러리</a>
+                    {% for category in categories %}
+                        <a href="/category/{{ category['분류번호'] }}" class="nav-category">{{ category['분류명칭'] }}</a>
+                    {% endfor %}
+                </div>
+                <div class="nav-right">
+                    <form action="/search" method="get" class="nav-search">
+                        <input type="text" name="q" placeholder="검색어를 입력하세요" value="{{ query|default('') }}">
+                        <button type="submit">검색</button>
+                    </form>
+                </div>
             </div>
         </nav>
     </header>
@@ -34,5 +55,18 @@
     <footer>
         <small class="footer-center">© 미디어팩트 신문</small>
     </footer>
+</main>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    var navToggle = document.querySelector('.nav-mobile .nav-toggle');
+    var navDropdown = document.querySelector('.nav-mobile .nav-dropdown-menu');
+    if(navToggle && navDropdown) {
+      navToggle.addEventListener('click', function(e) {
+        e.preventDefault();
+        navDropdown.classList.toggle('open');
+      });
+    }
+  });
+</script>
 </body>
 </html>

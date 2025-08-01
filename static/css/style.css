@@ -115,9 +115,6 @@ footer {
 
 /* 3. 네비게이션/카테고리/검색 */
 .nav-bar-flex {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
     width: 100%;
     gap: 0;
     margin-bottom: 0;
@@ -190,6 +187,8 @@ footer {
     border-radius: 0 !important;
     margin-bottom: 0;
     line-height: 1.2;
+    max-width: 160px;
+    min-width: 60px;
 }
 .nav-search button {
     padding: 2px 10px 1px 10px;
@@ -203,6 +202,70 @@ footer {
     margin-left: 2px;
     margin-bottom: 0;
     line-height: 1.2;
+}
+.nav-desktop { display: flex; }
+.nav-mobile { display: none; }
+@media (max-width: 1000px) {
+  .nav-desktop { display: none !important; }
+  .nav-mobile { display: flex !important; width: 100%; align-items: center; position: relative; }
+}
+.nav-mobile .nav-toggle {
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+  width: 40px;
+  height: 40px;
+  justify-content: center;
+  align-items: center;
+  background: none;
+  border: none;
+  margin-right: 8px;
+  z-index: 1001;
+}
+.nav-mobile .nav-toggle-bar {
+  width: 28px;
+  height: 4px;
+  background: #333;
+  margin: 4px 0;
+  border-radius: 2px;
+  display: block;
+  transition: 0.3s;
+}
+.nav-mobile .nav-dropdown-menu {
+  display: none;
+  flex-direction: column;
+  position: absolute;
+  left: 0;
+  top: 100%;
+  background: #fff;
+  width: 220px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  border-radius: 0 0 8px 8px;
+  padding: 12px 0 12px 0;
+  z-index: 1000;
+  margin-top: 2px;
+}
+.nav-mobile .nav-dropdown-menu.open {
+  display: flex;
+}
+.nav-mobile .nav-photo, .nav-mobile .nav-category {
+  width: 100%;
+  text-align: left;
+  padding: 10px 18px;
+  border-radius: 0;
+  font-size: 1.08em;
+  border-bottom: 1px solid #f0f0f0;
+}
+.nav-mobile .nav-photo:last-child, .nav-mobile .nav-category:last-child {
+  border-bottom: none;
+}
+.nav-mobile .nav-right {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 0;
+  padding-right: 8px;
 }
 
 /* 5. 유틸리티 */
