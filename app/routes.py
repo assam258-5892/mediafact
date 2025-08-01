@@ -102,7 +102,7 @@ def article_edit(article_id):
     categories = db.execute('SELECT * FROM 분류 ORDER BY 분류번호').fetchall()
     return render_template('article/edit.html', article=article, categories=categories, photos=photos)
 
-# 카테고리별 기사
+# 분류별 기사
 @app.route('/category/<int:category_id>')
 def category(category_id):
     db = get_db()
@@ -117,7 +117,7 @@ def category(category_id):
     ''', (category_id,)).fetchall()
     category_info = db.execute('SELECT * FROM 분류 WHERE 분류번호=?', (category_id,)).fetchone()
     categories = db.execute('SELECT * FROM 분류 ORDER BY 분류번호').fetchall()
-    return render_template('category/index.html', articles=articles, category_info=category_info, categories=categories)
+    return render_template('category/index.html', articles=articles, category_info=category_info, categories=categories, category_id=category_id)
 
 # 기자별 기사
 @app.route('/reporter/<int:reporter_id>')
@@ -134,7 +134,7 @@ def reporter(reporter_id):
     ''', (reporter_id,)).fetchall()
     reporter = db.execute('SELECT * FROM 기자 WHERE 기자번호=?', (reporter_id,)).fetchone()
     categories = db.execute('SELECT * FROM 분류 ORDER BY 분류번호').fetchall()
-    return render_template('reporter/index.html', articles=articles, reporter=reporter, categories=categories)
+    return render_template('reporter/index.html', articles=articles, reporter=reporter, categories=categories, reporter_id=reporter_id)
 
 # 사진 갤러리
 @app.route('/photo')
@@ -167,10 +167,12 @@ def search():
     articles = []
     photos = []
     search_type = request.args.get('type', '')
+    category_id = request.args.get('category_id')
+    reporter_id = request.args.get('reporter_id')
     if query:
         try:
             if search_type == 'photo':
-                # 사진 검색만
+                # 사진 검색만 (분류 제한 없음)
                 sql_photo = '''
                     SELECT 사진.*, 기사.기사제목, 기사.기사부제, 기사.기사요약, 기사.기사내용
                     FROM 사진전문색인
@@ -190,14 +192,23 @@ def search():
                     JOIN 분류 ON 기사.분류번호 = 분류.분류번호
                     JOIN 기자 ON 기사.기자번호 = 기자.기자번호
                     WHERE 기사전문색인 MATCH ? AND 기사.공개여부=1
+                    {cat_filter}
+                    {reporter_filter}
                     ORDER BY 기사.작성일자 DESC
-                '''
-                articles = db.execute(sql_article, (query,)).fetchall()
+                '''.replace('{cat_filter}', 'AND 기사.분류번호=?' if category_id else '').replace('{reporter_filter}', 'AND 기자.기자번호=?' if reporter_id else '')
+                params = [query]
+                if category_id:
+                    params.append(category_id)
+                if reporter_id:
+                    params.append(reporter_id)
+                articles = db.execute(sql_article, tuple(params)).fetchall()
         except Exception as e:
             articles = []
             photos = []
     categories = db.execute('SELECT * FROM 분류 ORDER BY 분류번호').fetchall()
-    return render_template('search/index.html', articles=articles, photos=photos, query=query, categories=categories, search_type=search_type)
+    category = db.execute('SELECT * FROM 분류 WHERE 분류번호=?', (category_id,)).fetchone() if category_id else None
+    reporter = db.execute('SELECT * FROM 기자 WHERE 기자번호=?', (reporter_id,)).fetchone() if reporter_id else None
+    return render_template('search/index.html', articles=articles, photos=photos, query=query, categories=categories, category=category, reporter=reporter, search_type=search_type, category_id=category_id, reporter_id=reporter_id )
 
 @app.teardown_appcontext
 def close_db(error):

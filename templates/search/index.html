@@ -2,7 +2,7 @@
 {% block title %}기사 검색 결과{% endblock %}
 {% block content %}
 {% if search_type == 'photo' %}
-<h2>사진 검색 결과</h2>
+    <h2>사진 검색 결과</h2>
     {% if photos %}
     <div class="photo-list">
         {% for photo in photos %}
@@ -19,7 +19,17 @@
     <p>사진 검색 결과가 없습니다.</p>
     {% endif %}
 {% else %}
-<h2>기사 검색 결과</h2>
+    <h2>기사 검색 결과</h2>
+    {% if category %}
+        <div style="color:#888; font-size:1.05em; margin-bottom:10px;">
+            <strong>분류:</strong> {{ category['분류명칭'] }} 내에서 검색됨
+        </div>
+    {% endif %}
+    {% if reporter %}
+        <div style="color:#888; font-size:1.05em; margin-bottom:10px;">
+            <strong>기자:</strong> {{ reporter['기자성명'] }}{% if reporter['기자직함'] %} {{ reporter['기자직함'] }}{% endif %}의 기사만 검색됨
+        </div>
+    {% endif %}
     {% if articles %}
     <div class="article-list">
         {% for article in articles %}
