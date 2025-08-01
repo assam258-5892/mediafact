@@ -1,9 +1,8 @@
 {% extends 'base.html' %}
 {% block title %}기사 검색 결과{% endblock %}
 {% block content %}
-<h2>검색 결과</h2>
 {% if search_type == 'photo' %}
-<h3>사진 검색 결과</h3>
+<h2>사진 검색 결과</h2>
     {% if photos %}
     <div class="photo-list">
         {% for photo in photos %}
@@ -20,7 +19,7 @@
     <p>사진 검색 결과가 없습니다.</p>
     {% endif %}
 {% else %}
-<h3>기사 검색 결과</h3>
+<h2>기사 검색 결과</h2>
     {% if articles %}
     <div class="article-list">
         {% for article in articles %}
