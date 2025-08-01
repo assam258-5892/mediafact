@@ -178,10 +178,10 @@ footer {
     align-items: center;
     margin-top: 2px;
     margin-bottom: 0;
-    padding-bottom: 0;
+    padding-bottom: 2px;
 }
 .nav-search input[type="text"] {
-    padding: 2px 8px 1px 8px;
+    padding: 2px 8px 0px 8px;
     font-size: 1em;
     border: none !important;
     border-radius: 0 !important;
@@ -191,7 +191,7 @@ footer {
     min-width: 60px;
 }
 .nav-search button {
-    padding: 2px 10px 1px 10px;
+    padding: 2px 10px 0px 10px;
     font-size: 1em;
     background: #0056b3;
     color: #fff;
@@ -208,7 +208,7 @@ footer {
     color: #fff !important;
     border-radius: 5px 5px 0 0;
     font-weight: bold;
-    padding: 4px 14px 0 14px;
+    padding: 2px 14px 2px 14px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.07);
     text-decoration: none;
     min-width: 0;
