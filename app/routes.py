@@ -91,6 +91,10 @@ def article_edit(article_id):
                    (title, subtitle, summary, content, publish, category, now, article_id))
         db.execute('REPLACE INTO 기사전문색인 (기사번호, 기사제목, 기사부제, 기사요약, 기사내용) VALUES (?, ?, ?, ?, ?)',
                    (article_id, title, subtitle, summary, content))
+        photos = db.execute('SELECT 사진연번, 사진설명 FROM 사진 WHERE 기사번호=?', (article_id,)).fetchall()
+        for photo in photos:
+            db.execute('REPLACE INTO 사진전문색인 (사진연번, 사진설명, 기사제목, 기사부제, 기사요약, 기사내용) VALUES (?, ?, ?, ?, ?, ?)',
+                       (photo['사진연번'], photo['사진설명'], title, subtitle, summary, content))
         db.commit()
         return redirect(url_for('article_detail', article_id=article_id))
     article = db.execute('SELECT * FROM 기사 WHERE 기사번호=?', (article_id,)).fetchone()
