@@ -186,8 +186,8 @@ footer {
 .nav-search input[type="text"] {
     padding: 2px 8px 1px 8px;
     font-size: 1em;
-    border: 1px solid #ccc;
-    border-radius: 3px;
+    border: none !important;
+    border-radius: 0 !important;
     margin-bottom: 0;
     line-height: 1.2;
 }
