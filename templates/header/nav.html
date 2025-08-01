@@ -2,11 +2,11 @@
     <!-- 데스크탑용 네비게이션 -->
     <div class="nav-bar-flex nav-desktop">
         <div class="nav-left">
-            <a href="/photo" class="nav-photo">사진 갤러리</a>
+            <a href="/photo" class="nav-photo{% if search_type == 'photo' %} active{% endif %}">사진 갤러리</a>
         </div>
         <div class="nav-center">
             {% for category in categories %}
-                <a href="/category/{{ category['분류번호'] }}" class="nav-category">{{ category['분류명칭'] }}</a>
+                <a href="/category/{{ category['분류번호'] }}" class="nav-category{% if category_id and (category['분류번호']|string == category_id|string) %} active{% endif %}">{{ category['분류명칭'] }}</a>
             {% endfor %}
         </div>
         <div class="nav-right">

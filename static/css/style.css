@@ -203,6 +203,16 @@ footer {
     margin-bottom: 0;
     line-height: 1.2;
 }
+/* nav active tab 효과 */
+.nav-category.active, .nav-photo.active {
+    background: #06c;
+    color: #fff !important;
+    border-radius: 5px 5px 0 0;
+    font-weight: bold;
+    padding: 4px 14px 6px 14px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    text-decoration: none;
+}
 .nav-desktop { display: flex; }
 .nav-mobile { display: none; }
 @media (max-width: 1000px) {
