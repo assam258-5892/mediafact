@@ -212,15 +212,9 @@ def search():
                     JOIN 분류 ON 기사.분류번호 = 분류.분류번호
                     JOIN 기자 ON 기사.기자번호 = 기자.기자번호
                     WHERE 기사전문색인 MATCH ? AND 기사.공개여부=1
-                    {cat_filter}
-                    {reporter_filter}
                     ORDER BY 기사.작성일자 DESC
                 '''.replace('{cat_filter}', 'AND 기사.분류번호=?' if category_id else '').replace('{reporter_filter}', 'AND 기자.기자번호=?' if reporter_id else '')
                 params = [morph_query]
-                if category_id:
-                    params.append(category_id)
-                if reporter_id:
-                    params.append(reporter_id)
                 articles = db.execute(sql_article, tuple(params)).fetchall()
         except Exception as e:
             articles = []
