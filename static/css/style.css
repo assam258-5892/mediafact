@@ -74,7 +74,7 @@ body > footer {
     box-sizing: border-box;
 }
 header {
-    border-bottom: 1px solid #e5e5e5;
+    border-bottom: 2px solid #000000;
     background: #fff;
     color: #222;
     padding: 4px 0;
