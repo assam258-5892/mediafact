@@ -7,8 +7,8 @@
         {% endif %}
         <div style="flex:1;min-width:0;">
             <a href="/article/{{ article['기사번호'] }}" title="{{ article['기사요약'] }}" style="font-size:1.15em;font-weight:600;">{{ article['기사제목'] }}</a><br>
-            {% if article['기사부제'] %}<span style="color:#666;font-size:1em;">{{ article['기사부제'] }}</span><br>{% endif %}
-            {% if article['기사요약'] %}<span style="color:#555;font-size:0.98em;">{{ article['기사요약'] }}</span><br>{% endif %}
+            {% if article['기사부제'] %}<a href="/article/{{ article['기사번호'] }}" style="color:#666;font-size:1em;text-decoration:none;">{{ article['기사부제'] }}</a><br>{% endif %}
+            {% if article['기사요약'] %}<a href="/article/{{ article['기사번호'] }}" style="color:#555;font-size:0.98em;text-decoration:none;">{{ article['기사요약'] }}</a><br>{% endif %}
             <small>{{ article['작성일자']|datetime_format }} | {{ article['기자성명'] }}{% if article['기자직함'] %} {{ article['기자직함'] }}{% endif %}</small>
         </div>
     </div>

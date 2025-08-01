@@ -10,10 +10,10 @@
     </a>
     {% endif %}
     <a href="/article/{{ articles[0]['기사번호'] }}" style="font-size:1.5em;font-weight:700;display:block;margin-bottom:8px;">{{ articles[0]['기사제목'] }}</a>
-    {% if articles[0]['기사부제'] %}<div style="color:#666;font-size:1.08em;margin-bottom:8px;">{{ articles[0]['기사부제'] }}</div>{% endif %}
-    <div style="color:#444;font-size:1.08em;margin-bottom:10px;">
+    {% if articles[0]['기사부제'] %}<a href="/article/{{ articles[0]['기사번호'] }}" style="color:#666;font-size:1.08em;margin-bottom:8px;display:block;text-decoration:none;">{{ articles[0]['기사부제'] }}</a>{% endif %}
+    <a href="/article/{{ articles[0]['기사번호'] }}" style="color:#444;font-size:1.08em;margin-bottom:10px;display:block;text-decoration:none;">
         {{ articles[0]['기사요약'] }}
-    </div>
+    </a>
     <small style="color:#888;">{{ articles[0]['작성일자']|datetime_format }} | {{ articles[0]['기자성명'] }}{% if articles[0]['기자직함'] %} {{ articles[0]['기자직함'] }}{% endif %}</small>
 </div>
 {% endif %}
