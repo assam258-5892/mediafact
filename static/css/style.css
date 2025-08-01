@@ -209,6 +209,12 @@ footer {
   .nav-desktop { display: none !important; }
   .nav-mobile { display: flex !important; width: 100%; align-items: center; position: relative; }
 }
+@media (max-width: 1000px) {
+  .nav-mobile .nav-search input[type="text"] {
+    max-width: 180px;
+    min-width: 80px;
+  }
+}
 .nav-mobile .nav-toggle {
   display: flex;
   flex-direction: column;
