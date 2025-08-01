@@ -1,9 +1,18 @@
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+
+import os
 import re
 import sqlite3
-from datetime import datetime
-
 import markdown
+from datetime import datetime
+from mecab import MeCab
 from flask import Flask, render_template, request, redirect, url_for, g
+
+mecab = MeCab()
+
+def mecab_morphs_text(text):
+    return ' '.join(mecab.morphs(text))
 
 DATABASE = 'db/mediafact.db'
 
@@ -89,12 +98,22 @@ def article_edit(article_id):
         now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         db.execute('UPDATE 기사 SET 기사제목=?, 기사부제=?, 기사요약=?, 기사내용=?, 공개여부=?, 분류번호=?, 수정일자=? WHERE 기사번호=?',
                    (title, subtitle, summary, content, publish, category, now, article_id))
+        # 형태소 분석 후 색인 테이블에 저장
         db.execute('REPLACE INTO 기사전문색인 (기사번호, 기사제목, 기사부제, 기사요약, 기사내용) VALUES (?, ?, ?, ?, ?)',
-                   (article_id, title, subtitle, summary, content))
+                   (article_id,
+                    mecab_morphs_text(title),
+                    mecab_morphs_text(subtitle),
+                    mecab_morphs_text(summary),
+                    mecab_morphs_text(content)))
         photos = db.execute('SELECT 사진연번, 사진설명 FROM 사진 WHERE 기사번호=?', (article_id,)).fetchall()
         for photo in photos:
             db.execute('REPLACE INTO 사진전문색인 (사진연번, 사진설명, 기사제목, 기사부제, 기사요약, 기사내용) VALUES (?, ?, ?, ?, ?, ?)',
-                       (photo['사진연번'], photo['사진설명'], title, subtitle, summary, content))
+                       (photo['사진연번'],
+                        mecab_morphs_text(photo['사진설명']),
+                        mecab_morphs_text(title),
+                        mecab_morphs_text(subtitle),
+                        mecab_morphs_text(summary),
+                        mecab_morphs_text(content)))
         db.commit()
         return redirect(url_for('article_detail', article_id=article_id))
     article = db.execute('SELECT * FROM 기사 WHERE 기사번호=?', (article_id,)).fetchone()
@@ -170,22 +189,23 @@ def search():
     category_id = request.args.get('category_id')
     reporter_id = request.args.get('reporter_id')
     if query:
+        morph_query = mecab_morphs_text(query)
         try:
             if search_type == 'photo':
                 # 사진 검색만 (분류 제한 없음)
                 sql_photo = '''
-                    SELECT 사진.*, 기사.기사제목, 기사.기사부제, 기사.기사요약, 기사.기사내용
+                    SELECT DISTINCT 사진.*, 기사.기사제목, 기사.기사부제, 기사.기사요약, 기사.기사내용
                     FROM 사진전문색인
                     JOIN 사진 ON 사진전문색인.사진연번 = 사진.사진연번
                     JOIN 기사 ON 사진.기사번호 = 기사.기사번호
                     WHERE 사진전문색인 MATCH ? AND 사진.삭제여부=0
                     ORDER BY 사진.등록일자 DESC
                 '''
-                photos = db.execute(sql_photo, (query,)).fetchall()
+                photos = db.execute(sql_photo, (morph_query,)).fetchall()
             else:
                 # 기사 검색만
                 sql_article = '''
-                    SELECT 기사.*, 기사.기사부제, 기사.기사요약, 분류.분류명칭, 기자.기자성명, 기자.기자직함,
+                    SELECT DISTINCT 기사.*, 기사.기사부제, 기사.기사요약, 분류.분류명칭, 기자.기자성명, 기자.기자직함,
                     (SELECT 사진경로 FROM 사진 WHERE 사진.기사번호 = 기사.기사번호 ORDER BY 사진.등록일자 ASC, 사진.사진번호 ASC LIMIT 1) AS 대표사진경로
                     FROM 기사전문색인
                     JOIN 기사 ON 기사전문색인.기사번호 = 기사.기사번호
@@ -196,7 +216,7 @@ def search():
                     {reporter_filter}
                     ORDER BY 기사.작성일자 DESC
                 '''.replace('{cat_filter}', 'AND 기사.분류번호=?' if category_id else '').replace('{reporter_filter}', 'AND 기자.기자번호=?' if reporter_id else '')
-                params = [query]
+                params = [morph_query]
                 if category_id:
                     params.append(category_id)
                 if reporter_id:
@@ -209,6 +229,37 @@ def search():
     category = db.execute('SELECT * FROM 분류 WHERE 분류번호=?', (category_id,)).fetchone() if category_id else None
     reporter = db.execute('SELECT * FROM 기자 WHERE 기자번호=?', (reporter_id,)).fetchone() if reporter_id else None
     return render_template('search/index.html', articles=articles, photos=photos, query=query, categories=categories, category=category, reporter=reporter, search_type=search_type, category_id=category_id, reporter_id=reporter_id )
+
+# 전체 기사/사진 색인 재생성 (관리자용)
+@app.route('/reindex')
+def admin_reindex():
+    db = get_db()
+    # 색인 테이블 비우기
+    db.execute('DELETE FROM 기사전문색인')
+    db.execute('DELETE FROM 사진전문색인')
+    # 기사 색인
+    articles = db.execute('SELECT 기사번호, 기사제목, 기사부제, 기사요약, 기사내용 FROM 기사').fetchall()
+    for a in articles:
+        db.execute('REPLACE INTO 기사전문색인 (기사번호, 기사제목, 기사부제, 기사요약, 기사내용) VALUES (?, ?, ?, ?, ?)',
+                   (a['기사번호'],
+                    mecab_morphs_text(a['기사제목'] or ''),
+                    mecab_morphs_text(a['기사부제'] or ''),
+                    mecab_morphs_text(a['기사요약'] or ''),
+                    mecab_morphs_text(a['기사내용'] or '')))
+    # 사진 색인
+    photos = db.execute('SELECT 사진연번, 사진설명, 기사번호 FROM 사진').fetchall()
+    for p in photos:
+        # 기사 정보 가져오기
+        a = db.execute('SELECT 기사제목, 기사부제, 기사요약, 기사내용 FROM 기사 WHERE 기사번호=?', (p['기사번호'],)).fetchone()
+        db.execute('REPLACE INTO 사진전문색인 (사진연번, 사진설명, 기사제목, 기사부제, 기사요약, 기사내용) VALUES (?, ?, ?, ?, ?, ?)',
+                   (p['사진연번'],
+                    mecab_morphs_text(p['사진설명'] or ''),
+                    mecab_morphs_text(a['기사제목'] if a else ''),
+                    mecab_morphs_text(a['기사부제'] if a else ''),
+                    mecab_morphs_text(a['기사요약'] if a else ''),
+                    mecab_morphs_text(a['기사내용'] if a else '')))
+    db.commit()
+    return '색인 재생성 완료!'
 
 @app.teardown_appcontext
 def close_db(error):
