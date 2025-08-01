@@ -81,11 +81,13 @@ def article_edit(article_id):
     db = get_db()
     if request.method == 'POST':
         title = request.form.get('title', '')
+        subtitle = request.form.get('subtitle', '')
         summary = request.form.get('summary', '')
         content = request.form.get('content', '')
         publish = int(request.form.get('publish', 0))
         now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        db.execute('UPDATE 기사 SET 기사제목=?, 기사요약=?, 기사내용=?, 공개여부=?, 수정일자=? WHERE 기사번호=?', (title, summary, content, publish, now, article_id))
+        db.execute('UPDATE 기사 SET 기사제목=?, 기사부제=?, 기사요약=?, 기사내용=?, 공개여부=?, 수정일자=? WHERE 기사번호=?',
+                   (title, subtitle, summary, content, publish, now, article_id))
         db.commit()
         return redirect(url_for('article_detail', article_id=article_id))
     article = db.execute('SELECT * FROM 기사 WHERE 기사번호=?', (article_id,)).fetchone()
