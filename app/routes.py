@@ -40,11 +40,11 @@ def get_db():
 def index():
     db = get_db()
     articles = db.execute('''
-        SELECT 기사.*, 분류명칭, 사진경로 AS 대표사진경로, 기자성명, 기자직함
+        SELECT 기사.*, 분류명칭, 기자성명, 기자직함, 사진경로 AS 대표사진경로
           FROM 기사
           JOIN 분류 ON 기사.분류번호 = 분류.분류번호
           JOIN 기자 ON 기사.기자번호 = 기자.기자번호
-          LEFT JOIN 사진 ON 대표사진 = 사진번호
+          LEFT JOIN 사진 ON 기사.기사번호 = 사진.기사번호 AND 대표사진 = 사진번호
          WHERE 공개여부=1
          ORDER BY 작성일자 DESC
          LIMIT 20
@@ -87,11 +87,11 @@ def article_detail(article_id):
 def category(category_id):
     db = get_db()
     articles = db.execute('''
-        SELECT 기사.*, 기사부제, 기사요약, 분류명칭, 기자성명, 기자직함,
-               (SELECT 사진경로 FROM 사진 WHERE 사진.기사번호 = 기사.기사번호 ORDER BY 등록일자 ASC, 사진.사진번호 ASC LIMIT 1) AS 대표사진경로
+        SELECT 기사.*, 분류명칭, 기자성명, 기자직함, 사진경로 AS 대표사진경로
           FROM 기사
           JOIN 분류 ON 기사.분류번호 = 분류.분류번호
           JOIN 기자 ON 기사.기자번호 = 기자.기자번호
+          LEFT JOIN 사진 ON 기사.기사번호 = 사진.기사번호 AND 대표사진 = 사진번호
          WHERE 기사.분류번호=? AND 공개여부=1
          ORDER BY 작성일자 DESC
     ''', (category_id,)).fetchall()
@@ -104,11 +104,11 @@ def category(category_id):
 def reporter(reporter_id):
     db = get_db()
     articles = db.execute('''
-        SELECT 기사.*, 기사부제, 기사요약, 분류명칭, 기자성명, 기자직함,
-               (SELECT 사진경로 FROM 사진 WHERE 사진.기사번호 = 기사.기사번호 ORDER BY 등록일자 ASC, 사진.사진번호 ASC LIMIT 1) AS 대표사진경로
+        SELECT 기사.*, 분류명칭, 기자성명, 기자직함, 사진경로 AS 대표사진경로
           FROM 기사
           JOIN 분류 ON 기사.분류번호 = 분류.분류번호
           JOIN 기자 ON 기사.기자번호 = 기자.기자번호
+          LEFT JOIN 사진 ON 기사.기사번호 = 사진.기사번호 AND 대표사진 = 사진번호
          WHERE 기자.기자번호=? AND 공개여부=1
          ORDER BY 작성일자 DESC
     ''', (reporter_id,)).fetchall()
@@ -163,12 +163,12 @@ def search():
                 photos = db.execute(sql_photo, (morph_query,)).fetchall()
             else:
                 sql_article = '''
-                    SELECT DISTINCT 기사.*, 기사부제, 기사요약, 분류명칭, 기자성명, 기자직함,
-                    (SELECT 사진경로 FROM 사진 WHERE 사진.기사번호 = 기사.기사번호 ORDER BY 등록일자 ASC, 사진.사진번호 ASC LIMIT 1) AS 대표사진경로
+                    SELECT DISTINCT 기사.*, 분류명칭, 기자성명, 기자직함, 사진경로 AS 대표사진경로
                     FROM 기사전문색인
                     JOIN 기사 ON 기사전문색인.기사번호 = 기사.기사번호
                     JOIN 분류 ON 기사.분류번호 = 분류.분류번호
                     JOIN 기자 ON 기사.기자번호 = 기자.기자번호
+                    LEFT JOIN 사진 ON 기사.기사번호 = 사진.기사번호 AND 대표사진 = 사진번호
                     WHERE 기사전문색인 MATCH ? AND 공개여부=1
                     ORDER BY 작성일자 DESC
                 '''.replace('{cat_filter}', 'AND 기사.분류번호=?' if category_id else '').replace('{reporter_filter}', 'AND 기자.기자번호=?' if reporter_id else '')
