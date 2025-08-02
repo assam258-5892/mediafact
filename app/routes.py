@@ -35,7 +35,7 @@ def get_db():
         g.sqlite_db = conn
     return g.sqlite_db
 
-# 메인(최신 기사 목록)
+# 메인
 @app.route('/')
 def index():
     db = get_db()
@@ -81,42 +81,6 @@ def article_detail(article_id):
     except Exception as e:
         article, photos, reporter, [], None, ''
     return render_template('article/index.html', article=article, photos=photos, reporter=reporter, categories=categories)
-
-# 기사 편집
-@app.route('/edit/<int:article_id>', methods=['GET', 'POST'])
-def article_edit(article_id):
-    db = get_db()
-    if request.method == 'POST':
-        title = request.form.get('title', '')
-        subtitle = request.form.get('subtitle', '')
-        summary = request.form.get('summary', '')
-        content = request.form.get('content', '')
-        publish = int(request.form.get('publish', 0))
-        category = int(request.form.get('category', 0))
-        now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        db.execute('UPDATE 기사 SET 기사제목=?, 기사부제=?, 기사요약=?, 기사내용=?, 공개여부=?, 분류번호=?, 수정일자=? WHERE 기사번호=?',
-                   (title, subtitle, summary, content, publish, category, now, article_id))
-        db.execute('REPLACE INTO 기사전문색인 (기사번호, 기사제목, 기사부제, 기사요약, 기사내용) VALUES (?, ?, ?, ?, ?)',
-                   (article_id,
-                    mecab_morphs_text(title),
-                    mecab_morphs_text(subtitle),
-                    mecab_morphs_text(summary),
-                    mecab_morphs_text(content)))
-        photos = db.execute('SELECT 사진연번, 사진설명 FROM 사진 WHERE 기사번호=?', (article_id,)).fetchall()
-        for photo in photos:
-            db.execute('REPLACE INTO 사진전문색인 (사진연번, 사진설명, 기사제목, 기사부제, 기사요약, 기사내용) VALUES (?, ?, ?, ?, ?, ?)',
-                       (photo['사진연번'],
-                        mecab_morphs_text(photo['사진설명']),
-                        mecab_morphs_text(title),
-                        mecab_morphs_text(subtitle),
-                        mecab_morphs_text(summary),
-                        mecab_morphs_text(content)))
-        db.commit()
-        return redirect(url_for('article_detail', article_id=article_id))
-    article = db.execute('SELECT * FROM 기사 WHERE 기사번호=?', (article_id,)).fetchone()
-    photos = db.execute('SELECT * FROM 사진 WHERE 기사번호=?', (article_id,)).fetchall()
-    categories = db.execute('SELECT * FROM 분류 ORDER BY 분류번호').fetchall()
-    return render_template('article/edit.html', article=article, photos=photos, categories=categories)
 
 # 분류별 기사
 @app.route('/category/<int:category_id>')
@@ -227,8 +191,44 @@ def search():
                            category_id=category_id,
                            reporter_id=reporter_id)
 
-# 전체 기사/사진 색인 재생성 (관리자용)
-@app.route('/reindex')
+# 기사 편집
+@app.route('/admin/edit/<int:article_id>', methods=['GET', 'POST'])
+def article_edit(article_id):
+    db = get_db()
+    if request.method == 'POST':
+        title = request.form.get('title', '')
+        subtitle = request.form.get('subtitle', '')
+        summary = request.form.get('summary', '')
+        content = request.form.get('content', '')
+        publish = int(request.form.get('publish', 0))
+        category = int(request.form.get('category', 0))
+        now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        db.execute('UPDATE 기사 SET 기사제목=?, 기사부제=?, 기사요약=?, 기사내용=?, 공개여부=?, 분류번호=?, 수정일자=? WHERE 기사번호=?',
+                   (title, subtitle, summary, content, publish, category, now, article_id))
+        db.execute('REPLACE INTO 기사전문색인 (기사번호, 기사제목, 기사부제, 기사요약, 기사내용) VALUES (?, ?, ?, ?, ?)',
+                   (article_id,
+                    mecab_morphs_text(title),
+                    mecab_morphs_text(subtitle),
+                    mecab_morphs_text(summary),
+                    mecab_morphs_text(content)))
+        photos = db.execute('SELECT 사진연번, 사진설명 FROM 사진 WHERE 기사번호=?', (article_id,)).fetchall()
+        for photo in photos:
+            db.execute('REPLACE INTO 사진전문색인 (사진연번, 사진설명, 기사제목, 기사부제, 기사요약, 기사내용) VALUES (?, ?, ?, ?, ?, ?)',
+                       (photo['사진연번'],
+                        mecab_morphs_text(photo['사진설명']),
+                        mecab_morphs_text(title),
+                        mecab_morphs_text(subtitle),
+                        mecab_morphs_text(summary),
+                        mecab_morphs_text(content)))
+        db.commit()
+        return redirect(url_for('article_detail', article_id=article_id))
+    article = db.execute('SELECT * FROM 기사 WHERE 기사번호=?', (article_id,)).fetchone()
+    photos = db.execute('SELECT * FROM 사진 WHERE 기사번호=?', (article_id,)).fetchall()
+    categories = db.execute('SELECT * FROM 분류 ORDER BY 분류번호').fetchall()
+    return render_template('article/edit.html', article=article, photos=photos, categories=categories)
+
+# 전체 기사/사진 색인 재생성
+@app.route('/admin/reindex')
 def admin_reindex():
     db = get_db()
     db.execute('DELETE FROM 기사전문색인')
