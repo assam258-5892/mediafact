@@ -20,5 +20,5 @@
         | <strong>수정:</strong> {{ article['수정일자'] | datetime_format }}
     {% endif %}
 </div>
-<div>{{ article_content_html|safe }}</div>
+<div>{{ article['기사내용'] | safe }}</div>
 {% endblock %}

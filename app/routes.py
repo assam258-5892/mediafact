@@ -40,15 +40,15 @@ def get_db():
 def index():
     db = get_db()
     articles = db.execute('''
-        SELECT 기사.*, 분류.분류명칭,
-        (SELECT 사진경로 FROM 사진 WHERE 사진.기사번호 = 기사.기사번호 ORDER BY 사진.등록일자 ASC, 사진.사진번호 ASC LIMIT 1) AS 대표사진경로,
-        기자.기자성명, 기자.기자직함
-        FROM 기사
-        JOIN 분류 ON 기사.분류번호 = 분류.분류번호
-        JOIN 기자 ON 기사.기자번호 = 기자.기자번호
-        WHERE 기사.공개여부=1
-        ORDER BY 작성일자 DESC
-        LIMIT 20
+        SELECT 기사.*, 분류명칭,
+               (SELECT 사진경로 FROM 사진 WHERE 사진.기사번호 = 기사.기사번호 ORDER BY 등록일자 ASC, 사진.사진번호 ASC LIMIT 1) AS 대표사진경로,
+               기자성명, 기자직함
+          FROM 기사
+          JOIN 분류 ON 기사.분류번호 = 분류.분류번호
+          JOIN 기자 ON 기사.기자번호 = 기자.기자번호
+         WHERE 공개여부=1
+         ORDER BY 작성일자 DESC
+         LIMIT 20
     ''').fetchall()
     categories = db.execute('SELECT * FROM 분류 ORDER BY 분류번호').fetchall()
     return render_template('index.html', articles=articles, categories=categories)
@@ -58,13 +58,12 @@ def index():
 def article_detail(article_id):
     db = get_db()
     try:
-        # 조회횟수 증가
         db.execute('UPDATE 기사 SET 조회횟수 = 조회횟수 + 1 WHERE 기사번호=?', (article_id,))
         db.commit()
-        article = db.execute('SELECT 기사.*, 분류.분류명칭 FROM 기사 JOIN 분류 ON 기사.분류번호 = 분류.분류번호 WHERE 기사번호=? AND 기사.공개여부=1', (article_id,)).fetchone()
+        article = db.execute('SELECT 기사.*, 분류명칭 FROM 기사 JOIN 분류 ON 기사.분류번호 = 분류.분류번호 WHERE 기사번호=? AND 공개여부=1', (article_id,)).fetchone()
         photos = db.execute('SELECT * FROM 사진 WHERE 기사번호=?', (article_id,)).fetchall()
         reporter = db.execute('SELECT * FROM 기자 WHERE 기자번호=?', (article['기자번호'],)).fetchone() if article else None
-        # 기사내용 [사진:N] 치환 후 마크다운 변환
+        categories = db.execute('SELECT * FROM 분류 ORDER BY 분류번호').fetchall()
         def replace_photo_tag(text, photos):
             def photo_replacer(match):
                 num = int(match.group(1))
@@ -74,15 +73,15 @@ def article_detail(article_id):
                         return f'<img src="/static/images/photo/{filename}" alt="사진:{num}" style="max-width:100%;">'
                 return match.group(0)
             return re.sub(r'\[사진:(\d+)\]', lambda m: photo_replacer(m), text)
+        article = dict(article)
         if article and photos:
             replaced_content = replace_photo_tag(article['기사내용'], photos)
-            article_content_html = markdown.markdown(replaced_content)
+            article['기사내용'] = markdown.markdown(replaced_content)
         else:
-            article_content_html = markdown.markdown(article['기사내용']) if article else ''
+            article['기사내용'] = markdown.markdown(article['기사내용']) if article else ''
     except Exception as e:
-        article, photos, reporter, article_content_html = None, [], None, ''
-    categories = db.execute('SELECT * FROM 분류 ORDER BY 분류번호').fetchall()
-    return render_template('article/index.html', article=article, photos=photos, reporter=reporter, categories=categories, article_content_html=article_content_html)
+        article, photos, reporter, [], None, ''
+    return render_template('article/index.html', article=article, photos=photos, reporter=reporter, categories=categories)
 
 # 기사 편집
 @app.route('/edit/<int:article_id>', methods=['GET', 'POST'])
@@ -98,7 +97,6 @@ def article_edit(article_id):
         now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         db.execute('UPDATE 기사 SET 기사제목=?, 기사부제=?, 기사요약=?, 기사내용=?, 공개여부=?, 분류번호=?, 수정일자=? WHERE 기사번호=?',
                    (title, subtitle, summary, content, publish, category, now, article_id))
-        # 형태소 분석 후 색인 테이블에 저장
         db.execute('REPLACE INTO 기사전문색인 (기사번호, 기사제목, 기사부제, 기사요약, 기사내용) VALUES (?, ?, ?, ?, ?)',
                    (article_id,
                     mecab_morphs_text(title),
@@ -119,37 +117,37 @@ def article_edit(article_id):
     article = db.execute('SELECT * FROM 기사 WHERE 기사번호=?', (article_id,)).fetchone()
     photos = db.execute('SELECT * FROM 사진 WHERE 기사번호=?', (article_id,)).fetchall()
     categories = db.execute('SELECT * FROM 분류 ORDER BY 분류번호').fetchall()
-    return render_template('article/edit.html', article=article, categories=categories, photos=photos)
+    return render_template('article/edit.html', article=article, photos=photos, categories=categories)
 
 # 분류별 기사
 @app.route('/category/<int:category_id>')
 def category(category_id):
     db = get_db()
     articles = db.execute('''
-        SELECT 기사.*, 기사.기사부제, 기사.기사요약, 분류.분류명칭, 기자.기자성명, 기자.기자직함,
-        (SELECT 사진경로 FROM 사진 WHERE 사진.기사번호 = 기사.기사번호 ORDER BY 사진.등록일자 ASC, 사진.사진번호 ASC LIMIT 1) AS 대표사진경로
-        FROM 기사
-        JOIN 분류 ON 기사.분류번호 = 분류.분류번호
-        JOIN 기자 ON 기사.기자번호 = 기자.기자번호
-        WHERE 기사.분류번호=? AND 기사.공개여부=1
-        ORDER BY 작성일자 DESC
+        SELECT 기사.*, 기사부제, 기사요약, 분류명칭, 기자성명, 기자직함,
+               (SELECT 사진경로 FROM 사진 WHERE 사진.기사번호 = 기사.기사번호 ORDER BY 등록일자 ASC, 사진.사진번호 ASC LIMIT 1) AS 대표사진경로
+          FROM 기사
+          JOIN 분류 ON 기사.분류번호 = 분류.분류번호
+          JOIN 기자 ON 기사.기자번호 = 기자.기자번호
+         WHERE 기사.분류번호=? AND 공개여부=1
+         ORDER BY 작성일자 DESC
     ''', (category_id,)).fetchall()
-    category_info = db.execute('SELECT * FROM 분류 WHERE 분류번호=?', (category_id,)).fetchone()
     categories = db.execute('SELECT * FROM 분류 ORDER BY 분류번호').fetchall()
-    return render_template('category/index.html', articles=articles, category_info=category_info, categories=categories, category_id=category_id)
+    category = db.execute('SELECT * FROM 분류 WHERE 분류번호=?', (category_id,)).fetchone()
+    return render_template('category/index.html', articles=articles, categories=categories, category=category, category_id=category_id)
 
 # 기자별 기사
 @app.route('/reporter/<int:reporter_id>')
 def reporter(reporter_id):
     db = get_db()
     articles = db.execute('''
-        SELECT 기사.*, 기사.기사부제, 기사.기사요약, 분류.분류명칭, 기자.기자성명, 기자.기자직함,
-        (SELECT 사진경로 FROM 사진 WHERE 사진.기사번호 = 기사.기사번호 ORDER BY 사진.등록일자 ASC, 사진.사진번호 ASC LIMIT 1) AS 대표사진경로
-        FROM 기사
-        JOIN 분류 ON 기사.분류번호 = 분류.분류번호
-        JOIN 기자 ON 기사.기자번호 = 기자.기자번호
-        WHERE 기자.기자번호=? AND 기사.공개여부=1
-        ORDER BY 작성일자 DESC
+        SELECT 기사.*, 기사부제, 기사요약, 분류명칭, 기자성명, 기자직함,
+               (SELECT 사진경로 FROM 사진 WHERE 사진.기사번호 = 기사.기사번호 ORDER BY 등록일자 ASC, 사진.사진번호 ASC LIMIT 1) AS 대표사진경로
+          FROM 기사
+          JOIN 분류 ON 기사.분류번호 = 분류.분류번호
+          JOIN 기자 ON 기사.기자번호 = 기자.기자번호
+         WHERE 기자.기자번호=? AND 공개여부=1
+         ORDER BY 작성일자 DESC
     ''', (reporter_id,)).fetchall()
     reporter = db.execute('SELECT * FROM 기자 WHERE 기자번호=?', (reporter_id,)).fetchone()
     categories = db.execute('SELECT * FROM 분류 ORDER BY 분류번호').fetchall()
@@ -162,10 +160,10 @@ def photo_gallery():
     page = int(request.args.get('page', 1))
     per_page = 20
     offset = (page - 1) * per_page
-    total = db.execute('SELECT COUNT(*) FROM 사진').fetchone()[0]
-    total_page = (total + per_page - 1) // per_page
     photos = db.execute('SELECT * FROM 사진 ORDER BY 등록일자 DESC LIMIT ? OFFSET ?', (per_page, offset)).fetchall()
     categories = db.execute('SELECT * FROM 분류 ORDER BY 분류번호').fetchall()
+    total = db.execute('SELECT COUNT(*) FROM 사진').fetchone()[0]
+    total_page = (total + per_page - 1) // per_page
     return render_template('photo/index.html', photos=photos, categories=categories, page=page, total_page=total_page, search_type='photo')
 
 # 사진 상세
@@ -175,8 +173,7 @@ def photo_detail(photo_id):
     photo = db.execute('SELECT * FROM 사진 WHERE 사진연번=?', (photo_id,)).fetchone()
     article = db.execute('SELECT 기사제목, 기사부제, 기사요약, 기사번호 FROM 기사 WHERE 기사번호=?', (photo['기사번호'],)).fetchone() if photo else None
     reporter = db.execute('SELECT * FROM 기자 WHERE 기자번호=?', (photo['기자번호'],)).fetchone() if photo else None
-    categories = db.execute('SELECT * FROM 분류 ORDER BY 분류번호').fetchall()
-    return render_template('photo/detail.html', photo=photo, article=article, reporter=reporter, categories=categories, search_type='photo')
+    return render_template('photo/detail.html', photo=photo, article=article, reporter=reporter, search_type='photo')
 
 # 기사 검색(FTS5)
 @app.route('/search')
@@ -192,27 +189,25 @@ def search():
         morph_query = mecab_morphs_text(query)
         try:
             if search_type == 'photo':
-                # 사진 검색만 (분류 제한 없음)
                 sql_photo = '''
-                    SELECT DISTINCT 사진.*, 기사.기사제목, 기사.기사부제, 기사.기사요약, 기사.기사내용
+                    SELECT DISTINCT 사진.*, 기사제목, 기사부제, 기사요약, 기사내용
                     FROM 사진전문색인
                     JOIN 사진 ON 사진전문색인.사진연번 = 사진.사진연번
                     JOIN 기사 ON 사진.기사번호 = 기사.기사번호
                     WHERE 사진전문색인 MATCH ? AND 사진.삭제여부=0
-                    ORDER BY 사진.등록일자 DESC
+                    ORDER BY 등록일자 DESC
                 '''
                 photos = db.execute(sql_photo, (morph_query,)).fetchall()
             else:
-                # 기사 검색만
                 sql_article = '''
-                    SELECT DISTINCT 기사.*, 기사.기사부제, 기사.기사요약, 분류.분류명칭, 기자.기자성명, 기자.기자직함,
-                    (SELECT 사진경로 FROM 사진 WHERE 사진.기사번호 = 기사.기사번호 ORDER BY 사진.등록일자 ASC, 사진.사진번호 ASC LIMIT 1) AS 대표사진경로
+                    SELECT DISTINCT 기사.*, 기사부제, 기사요약, 분류명칭, 기자성명, 기자직함,
+                    (SELECT 사진경로 FROM 사진 WHERE 사진.기사번호 = 기사.기사번호 ORDER BY 등록일자 ASC, 사진.사진번호 ASC LIMIT 1) AS 대표사진경로
                     FROM 기사전문색인
                     JOIN 기사 ON 기사전문색인.기사번호 = 기사.기사번호
                     JOIN 분류 ON 기사.분류번호 = 분류.분류번호
                     JOIN 기자 ON 기사.기자번호 = 기자.기자번호
-                    WHERE 기사전문색인 MATCH ? AND 기사.공개여부=1
-                    ORDER BY 기사.작성일자 DESC
+                    WHERE 기사전문색인 MATCH ? AND 공개여부=1
+                    ORDER BY 작성일자 DESC
                 '''.replace('{cat_filter}', 'AND 기사.분류번호=?' if category_id else '').replace('{reporter_filter}', 'AND 기자.기자번호=?' if reporter_id else '')
                 params = [morph_query]
                 articles = db.execute(sql_article, tuple(params)).fetchall()
@@ -222,16 +217,23 @@ def search():
     categories = db.execute('SELECT * FROM 분류 ORDER BY 분류번호').fetchall()
     category = db.execute('SELECT * FROM 분류 WHERE 분류번호=?', (category_id,)).fetchone() if category_id else None
     reporter = db.execute('SELECT * FROM 기자 WHERE 기자번호=?', (reporter_id,)).fetchone() if reporter_id else None
-    return render_template('search/index.html', articles=articles, photos=photos, query=query, categories=categories, category=category, reporter=reporter, search_type=search_type, category_id=category_id, reporter_id=reporter_id )
+    return render_template('search/index.html',
+                           articles=articles,
+                           photos=photos,
+                           categories=categories,
+                           category=category,
+                           reporter=reporter,
+                           query=query,
+                           search_type=search_type,
+                           category_id=category_id,
+                           reporter_id=reporter_id)
 
 # 전체 기사/사진 색인 재생성 (관리자용)
 @app.route('/reindex')
 def admin_reindex():
     db = get_db()
-    # 색인 테이블 비우기
     db.execute('DELETE FROM 기사전문색인')
     db.execute('DELETE FROM 사진전문색인')
-    # 기사 색인
     articles = db.execute('SELECT 기사번호, 기사제목, 기사부제, 기사요약, 기사내용 FROM 기사').fetchall()
     for a in articles:
         db.execute('REPLACE INTO 기사전문색인 (기사번호, 기사제목, 기사부제, 기사요약, 기사내용) VALUES (?, ?, ?, ?, ?)',
@@ -240,18 +242,15 @@ def admin_reindex():
                     mecab_morphs_text(a['기사부제'] or ''),
                     mecab_morphs_text(a['기사요약'] or ''),
                     mecab_morphs_text(a['기사내용'] or '')))
-    # 사진 색인
-    photos = db.execute('SELECT 사진연번, 사진설명, 기사번호 FROM 사진').fetchall()
-    for p in photos:
-        # 기사 정보 가져오기
-        a = db.execute('SELECT 기사제목, 기사부제, 기사요약, 기사내용 FROM 기사 WHERE 기사번호=?', (p['기사번호'],)).fetchone()
+    photos_with_articles = db.execute('SELECT 사진연번, 사진설명, 기사제목, 기사부제, 기사요약, 기사내용 FROM 사진 LEFT JOIN 기사 ON 사진.기사번호 = 기사.기사번호').fetchall()
+    for p in photos_with_articles:
         db.execute('REPLACE INTO 사진전문색인 (사진연번, 사진설명, 기사제목, 기사부제, 기사요약, 기사내용) VALUES (?, ?, ?, ?, ?, ?)',
                    (p['사진연번'],
                     mecab_morphs_text(p['사진설명'] or ''),
-                    mecab_morphs_text(a['기사제목'] if a else ''),
-                    mecab_morphs_text(a['기사부제'] if a else ''),
-                    mecab_morphs_text(a['기사요약'] if a else ''),
-                    mecab_morphs_text(a['기사내용'] if a else '')))
+                    mecab_morphs_text(p['기사제목'] or ''),
+                    mecab_morphs_text(p['기사부제'] or ''),
+                    mecab_morphs_text(p['기사요약'] or ''),
+                    mecab_morphs_text(p['기사내용'] or '')))
     db.commit()
     return '색인 재생성 완료!'
 
@@ -259,14 +258,12 @@ def admin_reindex():
 def sitemap():
     db = get_db()
     urls = []
-    # 메인
     urls.append({
         'loc': url_for('index', _external=True),
         'lastmod': datetime.now().strftime('%Y-%m-%d'),
         'changefreq': 'daily',
         'priority': '1.0'
     })
-    # 기사 (수정일자 있으면, 없으면 작성일자)
     articles = db.execute('SELECT 기사번호, 작성일자, 수정일자 FROM 기사 WHERE 공개여부=1').fetchall()
     for a in articles:
         lastmod = ''
@@ -280,7 +277,6 @@ def sitemap():
             'changefreq': 'weekly',
             'priority': '0.8'
         })
-    # 카테고리
     categories = db.execute('SELECT 분류번호 FROM 분류').fetchall()
     for c in categories:
         urls.append({
@@ -288,7 +284,6 @@ def sitemap():
             'changefreq': 'weekly',
             'priority': '0.6'
         })
-    # 사진 (등록일자)
     photos = db.execute('SELECT 사진연번, 등록일자 FROM 사진').fetchall()
     for p in photos:
         lastmod = p['등록일자'][:10] if p['등록일자'] else ''
@@ -298,7 +293,6 @@ def sitemap():
             'changefreq': 'monthly',
             'priority': '0.5'
         })
-    # XML 생성
     xml = ['<?xml version="1.0" encoding="UTF-8"?>']
     xml.append('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">')
     for u in urls:

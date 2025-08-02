@@ -1,9 +1,9 @@
 {% extends 'base.html' %}
 {% block title %}분류별 기사{% endblock %}
 {% block content %}
-<h2>분류: {{ category_info['분류명칭'] }}</h2>
-{% if category_info['분류설명'] %}
-<div style="color:#888; font-size:1.05em; margin-bottom:10px;">{{ category_info['분류설명'] }}</div>
+<h2>분류: {{ category['분류명칭'] }}</h2>
+{% if category['분류설명'] %}
+<div style="color:#888; font-size:1.05em; margin-bottom:10px;">{{ category['분류설명'] }}</div>
 {% endif %}
 <div class="article-list">
     {% for article in articles %}
