@@ -40,12 +40,11 @@ def get_db():
 def index():
     db = get_db()
     articles = db.execute('''
-        SELECT 기사.*, 분류명칭,
-               (SELECT 사진경로 FROM 사진 WHERE 사진.기사번호 = 기사.기사번호 ORDER BY 등록일자 ASC, 사진.사진번호 ASC LIMIT 1) AS 대표사진경로,
-               기자성명, 기자직함
+        SELECT 기사.*, 분류명칭, 사진경로 AS 대표사진경로, 기자성명, 기자직함
           FROM 기사
           JOIN 분류 ON 기사.분류번호 = 분류.분류번호
           JOIN 기자 ON 기사.기자번호 = 기자.기자번호
+          LEFT JOIN 사진 ON 대표사진 = 사진번호
          WHERE 공개여부=1
          ORDER BY 작성일자 DESC
          LIMIT 20
@@ -242,7 +241,7 @@ def admin_reindex():
                     mecab_morphs_text(a['기사부제'] or ''),
                     mecab_morphs_text(a['기사요약'] or ''),
                     mecab_morphs_text(a['기사내용'] or '')))
-    photos_with_articles = db.execute('SELECT 사진연번, 사진설명, 기사제목, 기사부제, 기사요약, 기사내용 FROM 사진 LEFT JOIN 기사 ON 사진.기사번호 = 기사.기사번호').fetchall()
+    photos_with_articles = db.execute('SELECT 사진연번, 사진설명, 기사제목, 기사부제, 기사요약, 기사내용 FROM 사진 JOIN 기사 ON 사진.기사번호 = 기사.기사번호').fetchall()
     for p in photos_with_articles:
         db.execute('REPLACE INTO 사진전문색인 (사진연번, 사진설명, 기사제목, 기사부제, 기사요약, 기사내용) VALUES (?, ?, ?, ?, ?, ?)',
                    (p['사진연번'],
